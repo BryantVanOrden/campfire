@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "821935943474",
+    "project_id": "campfire-88593",
+    "storage_bucket": "campfire-88593.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:821935943474:android:5865f981210bf4adcaf12b",
+        "android_client_info": {
+          "package_name": "com.dbj.campfire"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDAvGC9fz_J-8OREWAI8Irek7mUbSgEBU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
