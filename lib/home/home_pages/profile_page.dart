@@ -8,7 +8,6 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
 
-
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -94,8 +93,13 @@ class _ProfilePageState extends State<ProfilePage> {
       // Upload the image to Firebase Storage
       String downloadUrl = await _uploadProfilePicture(File(image.path));
 
-      // Update the user's profile with the new picture URL
+      // Update the user's profile with the new picture URL in Firebase Auth
       await user?.updatePhotoURL(downloadUrl);
+
+      // Update the profileImageLink in Firestore for the user
+      await _firestore.collection('users').doc(user?.uid).update({
+        'profileImageLink': downloadUrl,
+      });
 
       // Refresh the UI to display the new picture
       setState(() {
@@ -104,7 +108,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // Function to upload profile picture to Firebase Storage
+// Function to upload profile picture to Firebase Storage
   Future<String> _uploadProfilePicture(File file) async {
     try {
       String fileName = 'profile_pictures/${user?.uid}.jpg';
