@@ -3,9 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-
 class ChatsPage extends StatefulWidget {
-  const ChatsPage({Key? key}) : super(key: key);  // Use 'Key' if using null-safety
+  const ChatsPage({Key? key})
+      : super(key: key); // Use 'Key' if using null-safety
 
   @override
   _ChatsPageState createState() => _ChatsPageState();
@@ -22,7 +22,7 @@ class _ChatsPageState extends State<ChatsPage> {
   @override
   void initState() {
     super.initState();
-    _fetchUsers();  // Fetch users when the page initializes
+    _fetchUsers(); // Fetch users when the page initializes
   }
 
   Future<void> _fetchUsers() async {
@@ -72,9 +72,8 @@ class _ChatsPageState extends State<ChatsPage> {
 
   void _openChat(DocumentSnapshot userDoc) {
     Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-    String? otherUserPhotoUrl = userData.containsKey('photoURL')
-        ? userData['photoURL']
-        : null;
+    String? otherUserPhotoUrl =
+        userData.containsKey('photoURL') ? userData['photoURL'] : null;
 
     Navigator.push(
       context,
@@ -82,7 +81,8 @@ class _ChatsPageState extends State<ChatsPage> {
         builder: (context) => CoupleChatPage(
           otherUserId: userData['uid'],
 
-          otherUserName: userData['email'] ?? 'Unknown', // Using email for displayName
+          otherUserName:
+              userData['email'] ?? 'Unknown', // Using email for displayName
           otherUserPhotoUrl: otherUserPhotoUrl, // Using profileImageLink
         ),
       ),
@@ -142,17 +142,5 @@ class _ChatsPageState extends State<ChatsPage> {
         ],
       ),
     );
-  }
-
-  // Helper function to get user profile image
-  ImageProvider _getUserImage(DocumentSnapshot userDoc) {
-    var data = userDoc.data() as Map<String, dynamic>;
-    String? photoURL = data['photoURL'];
-
-    if (photoURL != null && photoURL.isNotEmpty) {
-      return NetworkImage(photoURL);
-    } else {
-      return const AssetImage('assets/images/default_profile_pic.jpg');
-    }
   }
 }
