@@ -10,6 +10,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/group_provider.dart';
 import 'theme/app_theme.dart';
+import 'package:campfire/providers/interest_provider.dart'; // Import InterestProvider
+import 'package:campfire/signup_signin/interests_page.dart'; // Import InterestsPage
+
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,43 +40,71 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(create: (_) => FeedProvider()),
         ChangeNotifierProvider<ThemeProvider>(
-          create: (_) =>
-              ThemeProvider()..toggleTheme(), // ThemeProvider initialization
+          create: (_) => ThemeProvider(),
+        ),
+        ChangeNotifierProvider<InterestProvider>(
+          create: (_) => InterestProvider(),
         ),
       ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
-          return MaterialApp(
-            title: 'Campfire App',
-            theme: themeProvider.isDarkMode
-                ? AppTheme.darkTheme
-                : AppTheme.lightTheme, // Use dynamic theme based on preference
-            home: const AuthenticationWrapper(),
-          );
-        },
-      ),
+      child: AuthenticationWrapper(isDarkMode: isDarkMode),
     );
   }
 }
 
 class AuthenticationWrapper extends StatelessWidget {
-  const AuthenticationWrapper({super.key});
+  final bool isDarkMode;
+
+  const AuthenticationWrapper({Key? key, required this.isDarkMode}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final interestProvider = Provider.of<InterestProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        } else if (snapshot.hasData) {
-          return const HomePage(); // If the user is logged in, show home page
-        } else {
-          return const LoginPage(); // Otherwise, show login page
-        }
+        // Build MaterialApp here
+        return MaterialApp(
+          title: 'Campfire App',
+          theme: themeProvider.isDarkMode ? AppTheme.darkTheme : AppTheme.lightTheme,
+          home: _buildHome(snapshot, interestProvider),
+        );
       },
     );
+  }
+
+  Widget _buildHome(
+    AsyncSnapshot<User?> snapshot,
+    InterestProvider interestProvider,
+  ) {
+    if (snapshot.connectionState == ConnectionState.waiting || interestProvider.isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    } else if (snapshot.hasData) {
+      return FutureBuilder<bool>(
+        future: interestProvider.checkInterest(),
+        builder: (context, interestSnapshot) {
+          if (interestSnapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          } else if (interestSnapshot.hasData) {
+            if (interestSnapshot.data == true) {
+              return const HomePage();
+            } else {
+              return const InterestsPage();
+            }
+          } else {
+            return const Scaffold(
+              body: Center(child: Text('Error loading interests')),
+            );
+          }
+        },
+      );
+    } else {
+      return const LoginPage();
+    }
   }
 }

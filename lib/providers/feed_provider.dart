@@ -15,10 +15,21 @@ class FeedProvider with ChangeNotifier {
   List<String> get userGroupIds => _userGroupIds;
   List<DocumentSnapshot> get events => _events;
   bool get isLoading => _isLoading;
+bool _isInitialized = false;
 
   FeedProvider() {
-    _loadUserGroupIds();
-    _listenToEvents();
+    initialize();
+  }
+
+
+
+  void initialize() {
+    if (!_isInitialized) {
+      _isInitialized = true;
+      print('FeedProvider initialized');
+      _loadUserGroupIds();
+      _listenToEvents();
+    }
   }
 
   Future<void> _loadUserGroupIds() async {

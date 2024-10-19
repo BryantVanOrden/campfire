@@ -1,5 +1,6 @@
 import 'package:campfire/screens/users_settings.dart';
 import 'package:campfire/shared_widets/edit_event_page.dart';
+import 'package:campfire/signup_signin/login.dart';
 import 'package:campfire/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -129,9 +130,12 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  void _logout(BuildContext context) async {
-    await _auth.signOut();
-  }
+void _logout(BuildContext context) async {
+  await _auth.signOut();
+  // No manual navigation needed
+}
+
+
 
   // Fetch all events from groups where the custom user is a moderator
   Stream<QuerySnapshot> _getModeratorGroupEvents() {
