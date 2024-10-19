@@ -1,3 +1,4 @@
+import 'package:campfire/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:campfire/firebase_options.dart';
@@ -5,17 +6,26 @@ import 'package:campfire/home/home.dart';
 import 'package:campfire/signup_signin/login.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/group_provider.dart';
-import 'package:campfire/theme/app_theme.dart';
-
+import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(MyApp());
+
+  // Ensure SharedPreferences is initialized
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  bool isDarkMode = prefs.getBool('isDarkMode') ?? false;
+
+  runApp(MyApp(isDarkMode: isDarkMode));
 }
 
 class MyApp extends StatelessWidget {
+  final bool isDarkMode;
+
+  MyApp({required this.isDarkMode});
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -23,16 +33,23 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<GroupProvider>(
           create: (_) => GroupProvider(),
         ),
-        // You can add more providers here if needed
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider()..toggleTheme(), // ThemeProvider initialization
+        ),
       ],
-      child: MaterialApp(
-        title: 'Campfire App',
-        theme: AppTheme.lightTheme, 
-        home: AuthenticationWrapper(),
-        // Define the routes here
-        routes: {
-          '/home': (context) => HomePage(),
-          '/login': (context) => SignUpLoginPage(), // The login page route
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: 'Campfire App',
+            theme: themeProvider.isDarkMode
+                ? AppTheme.darkTheme
+                : AppTheme.lightTheme, // Use dynamic theme based on preference
+            home: AuthenticationWrapper(),
+            routes: {
+              '/home': (context) => HomePage(),
+              '/login': (context) => SignUpLoginPage(),
+            },
+          );
         },
       ),
     );

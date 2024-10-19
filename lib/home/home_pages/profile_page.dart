@@ -1,10 +1,13 @@
 import 'package:campfire/shared_widets/edit_event_page.dart';
+import 'package:campfire/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:provider/provider.dart';
+
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -128,15 +131,30 @@ class _ProfilePageState extends State<ProfilePage> {
         .snapshots();
   }
 
+
   @override
-  Widget build(BuildContext context) {
+    Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Profile Page'),
+        actions: [
+          IconButton(
+            icon: Icon(
+              themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+            ),
+            onPressed: () {
+              themeProvider.toggleTheme(); // Toggle between light and dark mode
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Tap the profile picture to view and change it
             GestureDetector(
               onTap: () => _showFullScreenProfilePicture(context),
               child: CircleAvatar(
@@ -148,19 +166,16 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
             SizedBox(height: 20),
-            // Display user email
             Text(
               user?.email ?? 'No Email',
               style: TextStyle(fontSize: 20),
             ),
             SizedBox(height: 20),
-            // Logout button
             ElevatedButton(
               onPressed: () => _logout(context),
               child: Text('Logout'),
             ),
             SizedBox(height: 30),
-            // Display the user's created events
             Text(
               'Moderated Group Events',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -186,7 +201,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       title: Text(event['name'] ?? 'No Name'),
                       subtitle: Text(event['description'] ?? 'No Description'),
                       onTap: () {
-                        // Navigate to the EditEventPage when tapped
                         Navigator.push(
                           context,
                           MaterialPageRoute(
