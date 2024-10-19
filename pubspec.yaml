@@ -105,6 +105,14 @@ flutter:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/images/campfire.svg"
+  image_path: "assets/images/campfire.png"
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/images/campfire.svg"
+  adaptive_icon_foreground: "assets/images/campfire.png"
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/images/splash.png
+  android: true
+  ios: true
+  web: true
+
