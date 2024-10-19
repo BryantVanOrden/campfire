@@ -34,7 +34,8 @@ class MyApp extends StatelessWidget {
           create: (_) => GroupProvider(),
         ),
         ChangeNotifierProvider<ThemeProvider>(
-          create: (_) => ThemeProvider()..toggleTheme(), // ThemeProvider initialization
+          create: (_) =>
+              ThemeProvider()..toggleTheme(), // ThemeProvider initialization
         ),
       ],
       child: Consumer<ThemeProvider>(
@@ -45,10 +46,6 @@ class MyApp extends StatelessWidget {
                 ? AppTheme.darkTheme
                 : AppTheme.lightTheme, // Use dynamic theme based on preference
             home: const AuthenticationWrapper(),
-            routes: {
-              '/home': (context) => const HomePage(),
-              '/login': (context) => const SignUpLoginPage(),
-            },
           );
         },
       ),
@@ -71,7 +68,7 @@ class AuthenticationWrapper extends StatelessWidget {
         } else if (snapshot.hasData) {
           return const HomePage(); // If the user is logged in, show home page
         } else {
-          return const SignUpLoginPage(); // Otherwise, show login page
+          return const LoginPage(); // Otherwise, show login page
         }
       },
     );

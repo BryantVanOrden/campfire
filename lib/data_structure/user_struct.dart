@@ -1,3 +1,5 @@
+import 'package:latlong2/latlong.dart'; // Import LatLng for location
+
 class User {
   String uid;
   String email;
@@ -5,7 +7,7 @@ class User {
   List<String>? groupIds; // Nullable list of group IDs
   String? profileImageLink; // Nullable link to profile image stored in Firebase
   DateTime dateOfBirth;
-  String location;
+  LatLng location; // LatLng object for location
 
   User({
     required this.uid,
@@ -25,7 +27,10 @@ class User {
       'groupIds': groupIds,
       'profileImageLink': profileImageLink,
       'dateOfBirth': dateOfBirth.toIso8601String(),
-      'location': location,
+      'location': {
+        'latitude': location.latitude,
+        'longitude': location.longitude,
+      },
     };
   }
 
@@ -37,7 +42,10 @@ class User {
       groupIds: json['groupIds']?.cast<String>(),
       profileImageLink: json['profileImageLink'],
       dateOfBirth: DateTime.parse(json['dateOfBirth']),
-      location: json['location'],
+      location: LatLng(
+        json['location']['latitude'],
+        json['location']['longitude'],
+      ),
     );
   }
 }
