@@ -59,38 +59,44 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
       // Generate a new group ID
       String groupId = Uuid().v4();
 
-      // Create the group in Firestore
-      final newGroup = Group(
-        groupId: groupId,
-        name: _groupName,
-        members: [],
-        moderators: [],
-        publicMembers: [],
-        bannedUids: [],
-        imageUrl: imageUrl, // Add the image URL to the group structure
-      );
+      // Get the current user UID
+      User? user = _auth.currentUser;
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('User not logged in')),
+        );
+        return;
+      }
 
-      // Add group to the Firestore collection
+      String userId = user.uid;
+
+      // Create the group in Firestore with the current user as a member and a moderator
       await _firestore.collection('groups').doc(groupId).set({
         'groupId': groupId,
         'name': _groupName,
-        'members': [], // Optionally, add the user as a member here
-        'moderators': [], // Optionally, add the user as a moderator here
+        'members': [userId], // Add the current user as a member
+        'moderators': [userId], // Add the current user as a moderator
         'publicMembers': [],
         'bannedUids': [],
         'imageUrl': imageUrl,
       });
 
       // Add the groupId to the user's groupIds
-      User? user = _auth.currentUser;
-      if (user != null) {
-        DocumentReference userDoc = _firestore.collection('users').doc(user.uid);
-        userDoc.update({
-          'groupIds': FieldValue.arrayUnion([groupId])
-        });
-      }
+      DocumentReference userDoc = _firestore.collection('users').doc(userId);
+      await userDoc.update({
+        'groupIds': FieldValue.arrayUnion([groupId])
+      });
 
       // Add group to the provider (if necessary for local state)
+      final newGroup = Group(
+        groupId: groupId,
+        name: _groupName,
+        members: [userId],
+        moderators: [userId],
+        publicMembers: [],
+        bannedUids: [],
+        imageUrl: imageUrl, // Add the image URL to the group structure
+      );
       Provider.of<GroupProvider>(context, listen: false).addGroup(newGroup);
 
       // Navigate back to home
