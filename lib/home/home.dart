@@ -20,7 +20,7 @@ class _HomePageState extends State<HomePage> {
     const FeedPage(),
     const GroupsPage(),
     const ChatsPage(),
-    const CallsPage(),
+    CallsPage(),
     const ProfilePage(),
   ];
 
