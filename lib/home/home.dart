@@ -31,10 +31,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // App Bar
-      appBar: AppBar(
-        title: Text('Campfire'),
-      ),
       // Body using IndexedStack to maintain state
       body: IndexedStack(
         index: _selectedIndex,
