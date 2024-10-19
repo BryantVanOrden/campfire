@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class VideoCallPage extends StatefulWidget {
   final String receiverId;
@@ -25,6 +26,7 @@ class _VideoCallPageState extends State<VideoCallPage> {
   @override
   void initState() {
     super.initState();
+    _requestPermissions();
     _initializeRenderers();
     _getUserMedia();
     _createOffer();
@@ -40,6 +42,21 @@ class _VideoCallPageState extends State<VideoCallPage> {
   void _initializeRenderers() async {
     await _localRenderer.initialize();
     await _remoteRenderer.initialize();
+  }
+
+  Future<void> _requestPermissions() async {
+    // Request camera and microphone permissions
+    var status = await Permission.camera.request();
+    if (status.isDenied) {
+      // The permission has been denied
+      print('Camera permission denied');
+    }
+
+    status = await Permission.microphone.request();
+    if (status.isDenied) {
+      // The permission has been denied
+      print('Microphone permission denied');
+    }
   }
 
   // Get local media (video and audio)
