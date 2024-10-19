@@ -70,35 +70,33 @@ class _ChatsPageState extends State<ChatsPage> {
   }
 
   void _openChat(DocumentSnapshot userDoc) {
-  // Cast the document data to Map<String, dynamic>
-  Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+    // Cast the document data to Map<String, dynamic>
+    Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
 
-  // Use a default profile picture if 'photoURL' is missing
-  String? otherUserPhotoUrl = userData.containsKey('photoURL')
-      ? userData['photoURL']
-      : null;
+    // Use profileImageLink instead of 'photoURL'
+    String? otherUserPhotoUrl = userData.containsKey('profileImageLink')
+        ? userData['profileImageLink']
+        : null;
 
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => CoupleChatPage(
-        otherUserId: userData['uid'],
-        otherUserName: userData['email'] ?? 'Unknown', // Using email for displayName
-        otherUserPhotoUrl: otherUserPhotoUrl, // Safe to use default or actual photoURL
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CoupleChatPage(
+          otherUserId: userData['uid'],
+          otherUserName: userData['email'] ?? 'Unknown', // Using email for displayName
+          otherUserPhotoUrl: otherUserPhotoUrl, // Using profileImageLink
+        ),
       ),
-    ),
-  );
-}
-
-
+    );
+  }
 
   // Helper function to get user profile image
   ImageProvider _getUserImage(DocumentSnapshot userDoc) {
     var data = userDoc.data() as Map<String, dynamic>;
-    String? photoURL = data['photoURL'];
+    String? profileImageLink = data['profileImageLink'];
 
-    if (photoURL != null && photoURL.isNotEmpty) {
-      return NetworkImage(photoURL);
+    if (profileImageLink != null && profileImageLink.isNotEmpty) {
+      return NetworkImage(profileImageLink);
     } else {
       return const AssetImage('assets/images/default_profile_pic.jpg');
     }
