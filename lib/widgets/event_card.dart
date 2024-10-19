@@ -1,5 +1,6 @@
 import 'package:campfire/screens/group_chat_page.dart';
 import 'package:campfire/theme/app_colors.dart';
+import 'package:campfire/widgets/comments_section.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
@@ -194,6 +195,10 @@ class EventCard extends StatelessWidget {
                       ),
                       Text('$likeCount'),
                     ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: CommentsSection(eventId: event.id),
                   ),
                 ],
               ),
