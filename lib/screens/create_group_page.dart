@@ -1,3 +1,5 @@
+import 'package:campfire/shared_widets/custom_text_form_field.dart';
+import 'package:campfire/shared_widets/secondary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../data_structure/group_struct.dart'; // Corrected import
@@ -42,7 +44,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
     try {
       String fileName = 'group_images/${const Uuid().v4()}.jpg';
-      UploadTask uploadTask = _storage.ref().child(fileName).putFile(_groupImage!);
+      UploadTask uploadTask =
+          _storage.ref().child(fileName).putFile(_groupImage!);
       TaskSnapshot taskSnapshot = await uploadTask;
       return await taskSnapshot.ref.getDownloadURL();
     } catch (e) {
@@ -121,15 +124,17 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Group Name Input
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Group Name'),
+                CustomTextFormField(
+                  labelText: 'Group Name', // Using your custom labelText
+                  hintText: 'Enter group name', // Using your custom hintText
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a group name';
                     }
                     return null;
                   },
-                  onSaved: (value) => _groupName = value!,
+                  onSaved: (value) =>
+                      _groupName = value!, // Save the group name
                 ),
 
                 const SizedBox(height: 20),
@@ -152,18 +157,20 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
                 const SizedBox(height: 10),
 
-                ElevatedButton.icon(
-                  onPressed: _pickGroupImage,
-                  icon: const Icon(Icons.photo_library),
-                  label: const Text('Pick Group Image'),
+                SecondaryButton(
+                  onPressed: () {
+                    // Implement image picking logic if needed
+                  },
+                  text: 'Pick Group Image',
+                  icon: Icons.photo_library,
                 ),
 
                 const SizedBox(height: 20),
 
                 // Create Group Button
-                ElevatedButton(
+                SecondaryButton(
                   onPressed: _submit,
-                  child: const Text('Create Group'),
+                  text: 'Create Group',
                 ),
               ],
             ),

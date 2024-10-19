@@ -1,10 +1,11 @@
 import 'package:campfire/screens/couple_chat_page.dart';
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
 
 class ChatsPage extends StatefulWidget {
-  const ChatsPage({super.key});
+  const ChatsPage({Key? key}) : super(key: key);  // Use 'Key' if using null-safety
 
   @override
   _ChatsPageState createState() => _ChatsPageState();
@@ -21,7 +22,7 @@ class _ChatsPageState extends State<ChatsPage> {
   @override
   void initState() {
     super.initState();
-    _fetchUsers(); // Fetch users on initialization
+    _fetchUsers();  // Fetch users when the page initializes
   }
 
   Future<void> _fetchUsers() async {
@@ -70,38 +71,21 @@ class _ChatsPageState extends State<ChatsPage> {
   }
 
   void _openChat(DocumentSnapshot userDoc) {
-  // Cast the document data to Map<String, dynamic>
-  Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+    Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+    String? otherUserPhotoUrl = userData.containsKey('photoURL')
+        ? userData['photoURL']
+        : null;
 
-  // Use a default profile picture if 'photoURL' is missing
-  String? otherUserPhotoUrl = userData.containsKey('photoURL')
-      ? userData['photoURL']
-      : null;
-
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => CoupleChatPage(
-        otherUserId: userData['uid'],
-        otherUserName: userData['email'] ?? 'Unknown', // Using email for displayName
-        otherUserPhotoUrl: otherUserPhotoUrl, // Safe to use default or actual photoURL
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CoupleChatPage(
+          otherUserId: userData['uid'],
+          otherUserName: userData['email'] ?? 'Unknown',
+          otherUserPhotoUrl: otherUserPhotoUrl,
+        ),
       ),
-    ),
-  );
-}
-
-
-
-  // Helper function to get user profile image
-  ImageProvider _getUserImage(DocumentSnapshot userDoc) {
-    var data = userDoc.data() as Map<String, dynamic>;
-    String? photoURL = data['photoURL'];
-
-    if (photoURL != null && photoURL.isNotEmpty) {
-      return NetworkImage(photoURL);
-    } else {
-      return const AssetImage('assets/images/default_profile_pic.jpg');
-    }
+    );
   }
 
   @override
@@ -117,9 +101,10 @@ class _ChatsPageState extends State<ChatsPage> {
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               decoration: const InputDecoration(
-                  labelText: 'Search by Email',
-                  prefixIcon: Icon(Icons.search),
-                  border: OutlineInputBorder()),
+                labelText: 'Search by Email',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
               onChanged: _searchUsers,
             ),
           ),
@@ -135,7 +120,7 @@ class _ChatsPageState extends State<ChatsPage> {
                         leading: CircleAvatar(
                           backgroundImage: _getUserImage(userDoc),
                         ),
-                        title: Text(userDoc['email'] ?? 'Unknown'), // Using email
+                        title: Text(userDoc['email'] ?? 'Unknown'),
                         onTap: () => _openChat(userDoc),
                       );
                     },
@@ -144,5 +129,17 @@ class _ChatsPageState extends State<ChatsPage> {
         ],
       ),
     );
+  }
+
+  // Helper function to get user profile image
+  ImageProvider _getUserImage(DocumentSnapshot userDoc) {
+    var data = userDoc.data() as Map<String, dynamic>;
+    String? photoURL = data['photoURL'];
+
+    if (photoURL != null && photoURL.isNotEmpty) {
+      return NetworkImage(photoURL);
+    } else {
+      return const AssetImage('assets/images/default_profile_pic.jpg');
+    }
   }
 }
