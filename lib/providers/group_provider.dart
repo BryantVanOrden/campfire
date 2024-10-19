@@ -38,6 +38,5 @@ class GroupProvider with ChangeNotifier {
   // Private method to update loading state
   void _setLoading(bool value) {
     _isLoading = value;
-    notifyListeners();
   }
 }
