@@ -8,7 +8,8 @@ class CoupleChatPage extends StatefulWidget {
   final String otherUserName;
   final String? otherUserPhotoUrl;
 
-  const CoupleChatPage({super.key, 
+  const CoupleChatPage({
+    super.key,
     required this.otherUserId,
     required this.otherUserName,
     this.otherUserPhotoUrl,
@@ -74,19 +75,60 @@ class _CoupleChatPageState extends State<CoupleChatPage> {
 
   Widget _buildMessageItem(Map<dynamic, dynamic> message) {
     bool isMe = message['senderId'] == currentUserId;
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-        decoration: BoxDecoration(
-          color: isMe ? Colors.blueAccent : Colors.grey[300],
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          message['text'] ?? '',
-          style: TextStyle(color: isMe ? Colors.white : Colors.black),
-        ),
+
+    final [bubbleColor, textColor] = isMe
+        ? [
+            Colors.blue,
+            Colors.white,
+          ]
+        : [
+            const Color(0xFFDDDDDD),
+            Colors.black,
+          ];
+    final padding = isMe
+        ? const EdgeInsets.fromLTRB(72.0, 1.0, 8.0, 1.0)
+        : const EdgeInsets.fromLTRB(8.0, 1.0, 72.0, 1.0);
+
+    // final gap = widget.gapType.toGap(widget.timestamp);
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          // isHovering = !isHovering;
+        });
+      },
+      child: Column(
+        children: [
+          // gap,
+          Align(
+            alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+            child: Padding(
+              padding: padding,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: bubbleColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Text(
+                  message['text'] ?? '',
+                  style: TextStyle(fontSize: 16, color: textColor),
+                ),
+              ),
+            ),
+          ),
+          // if (isHovering)
+          //   Padding(
+          //     padding: const EdgeInsets.symmetric(horizontal: 22.0),
+          //     child: Align(
+          //       alignment: isMe
+          //           ? Alignment.centerRight
+          //           : Alignment.centerLeft,
+          //       child: Text(TimeFunctions.getFormattedTime(widget.timestamp), style: const TextStyle(fontSize: 12)),
+          //     ),
+          //   )
+        ],
       ),
     );
   }
@@ -100,9 +142,11 @@ class _CoupleChatPageState extends State<CoupleChatPage> {
         title: Row(
           children: [
             CircleAvatar(
-              backgroundImage: widget.otherUserPhotoUrl != null && widget.otherUserPhotoUrl!.isNotEmpty
+              backgroundImage: widget.otherUserPhotoUrl != null &&
+                      widget.otherUserPhotoUrl!.isNotEmpty
                   ? NetworkImage(widget.otherUserPhotoUrl!)
-                  : const AssetImage('assets/images/default_profile_pic.jpg') as ImageProvider,
+                  : const AssetImage('assets/images/default_profile_pic.jpg')
+                      as ImageProvider,
             ),
             const SizedBox(width: 8),
             Text(widget.otherUserName),
@@ -130,7 +174,8 @@ class _CoupleChatPageState extends State<CoupleChatPage> {
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
                       // Cast each message to Map<dynamic, dynamic>
-                      Map<dynamic, dynamic> message = messages[index] as Map<dynamic, dynamic>;
+                      Map<dynamic, dynamic> message =
+                          messages[index] as Map<dynamic, dynamic>;
                       return _buildMessageItem(message);
                     },
                   );
