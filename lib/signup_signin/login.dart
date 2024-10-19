@@ -3,6 +3,8 @@ import 'package:campfire/signup_signin/signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:campfire/theme/app_colors.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -67,96 +69,100 @@ Future<void> _login() async {
       _emailController.text.isNotEmpty && _passwordController.text.isNotEmpty;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              // Email Field
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(Icons.email, color: AppColors.darkGreen),
-                ),
-                keyboardType: TextInputType.emailAddress,
-                // validator: (value) {
-                //   if (value == null || value.trim().isEmpty) {
-                //     return 'Please enter your email';
-                //   }
-                //   if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value.trim())) {
-                //     return 'Please enter a valid email';
-                //   }
-                //   return null;
-                // },
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('Sign Up'),
+    ),
+    body: SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            // SVG Icon
+            SvgPicture.asset(
+              'assets/images/campfire-text.svg',
+              width: 200.0,
+              height: 200.0,
+            ),
+            const SizedBox(height: 16),
+            // Email Field
+            TextFormField(
+              controller: _emailController,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                prefixIcon: Icon(Icons.email, color: AppColors.darkGreen),
               ),
-              const SizedBox(height: 16),
-              // Password Field
-              TextFormField(
-                controller: _passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  prefixIcon:
-                      const Icon(Icons.lock, color: AppColors.darkGreen),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _passwordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                      color: AppColors.darkGreen,
-                    ),
-                    onPressed: () =>
-                        setState(() => _passwordVisible = !_passwordVisible),
+              keyboardType: TextInputType.emailAddress,
+              // validator: (value) {
+              //   if (value == null || value.trim().isEmpty) {
+              //     return 'Please enter your email';
+              //   }
+              //   if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value.trim())) {
+              //     return 'Please enter a valid email';
+              //   }
+              //   return null;
+              // },
+            ),
+            const SizedBox(height: 16),
+            // Password Field
+            TextFormField(
+              controller: _passwordController,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                prefixIcon: const Icon(Icons.lock, color: AppColors.darkGreen),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                    color: AppColors.darkGreen,
                   ),
-                ),
-                obscureText: !_passwordVisible,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  if (value.trim().length < 6) {
-                    return 'Password must be at least 6 characters';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              // Submit Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _login,
-                  child: const Text('Log in'),
+                  onPressed: () => setState(() => _passwordVisible = !_passwordVisible),
                 ),
               ),
-              if (_errorMessage.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    _errorMessage,
-                    style: TextStyle(
-                        color: Colors.red, fontWeight: FontWeight.bold),
+              obscureText: !_passwordVisible,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Please enter your password';
+                }
+                if (value.trim().length < 6) {
+                  return 'Password must be at least 6 characters';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 20),
+            // Submit Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _login,
+                child: const Text('Log in'),
+              ),
+            ),
+            if (_errorMessage.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  _errorMessage,
+                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                ),
+              ),
+            TextButton(
+              child: const Text("Sign up"),
+              onPressed: () => {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SignUpPage(),
                   ),
-                ),
-              TextButton(
-                child: const Text("Sign up"),
-                onPressed: () => {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SignUpPage(),
-                    ),
-                  )
-                },
-              )
-            ],
-          ),
+                )
+              },
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
