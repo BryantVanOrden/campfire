@@ -1,11 +1,16 @@
+import 'package:campfire/shared_widets/custom_text_form_field.dart';
+import 'package:campfire/shared_widets/primary_button.dart';
+import 'package:campfire/shared_widets/secondary_button.dart';
+import 'package:campfire/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:io';
 
 class EditEventPage extends StatefulWidget {
   final DocumentSnapshot event;
 
-  EditEventPage({required this.event});
+  const EditEventPage({super.key, required this.event});
 
   @override
   _EditEventPageState createState() => _EditEventPageState();
@@ -21,6 +26,7 @@ class _EditEventPageState extends State<EditEventPage> {
   final TextEditingController _locationController = TextEditingController();
   DateTime? eventDateTime;
   bool isPublicEvent = false;
+  File? eventImage; // Placeholder for an image if needed
 
   @override
   void initState() {
@@ -38,7 +44,7 @@ class _EditEventPageState extends State<EditEventPage> {
   Future<void> _updateEvent() async {
     if (_eventNameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Event name cannot be empty')),
+        const SnackBar(content: Text('Event name cannot be empty')),
       );
       return;
     }
@@ -49,7 +55,8 @@ class _EditEventPageState extends State<EditEventPage> {
       'description': _eventDescriptionController.text,
       'location': _locationController.text,
       'isPublic': isPublicEvent,
-      'dateTime': eventDateTime != null ? Timestamp.fromDate(eventDateTime!) : null,
+      'dateTime':
+          eventDateTime != null ? Timestamp.fromDate(eventDateTime!) : null,
     });
 
     // Send updated event to group chats
@@ -65,17 +72,24 @@ class _EditEventPageState extends State<EditEventPage> {
     DateTime? dateTime = eventDateTime;
 
     // Send the updated event to members' chat
-    await _sendEventToGroupChat(groupId, eventName, location, dateTime, chatType: 'members');
+    await _sendEventToGroupChat(groupId, eventName, location, dateTime,
+        chatType: 'members');
 
     // If public, send to public chat as well
     if (isPublicEvent) {
-      await _sendEventToGroupChat(groupId, eventName, location, dateTime, chatType: 'public');
+      await _sendEventToGroupChat(groupId, eventName, location, dateTime,
+          chatType: 'public');
     }
   }
 
   Future<void> _sendEventToGroupChat(String groupId, String eventName,
-      String? location, DateTime? dateTime, {required String chatType}) async {
-    await _firestore.collection('groups').doc(groupId).collection(chatType == 'public' ? 'publicMessages' : 'messages').add({
+      String? location, DateTime? dateTime,
+      {required String chatType}) async {
+    await _firestore
+        .collection('groups')
+        .doc(groupId)
+        .collection(chatType == 'public' ? 'publicMessages' : 'messages')
+        .add({
       'text': 'Event Updated: $eventName',
       'location': location,
       'dateTime': dateTime != null ? Timestamp.fromDate(dateTime) : null,
@@ -101,7 +115,9 @@ class _EditEventPageState extends State<EditEventPage> {
     if (pickedDate != null) {
       TimeOfDay? pickedTime = await showTimePicker(
         context: context,
-        initialTime: TimeOfDay.now(),
+        initialTime: eventDateTime != null
+            ? TimeOfDay.fromDateTime(eventDateTime!)
+            : TimeOfDay.now(),
       );
 
       if (pickedTime != null) {
@@ -122,56 +138,113 @@ class _EditEventPageState extends State<EditEventPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Event'),
+        title: const Text('Edit Event'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Event Name
-            TextFormField(
+            CustomTextFormField(
               controller: _eventNameController,
-              decoration: InputDecoration(labelText: 'Event Name'),
+              labelText: 'Event Name',
+              hintText: 'Camping with the boys',
             ),
+
             // Event Description
-            TextFormField(
+            CustomTextFormField(
               controller: _eventDescriptionController,
-              decoration: InputDecoration(labelText: 'Event Description'),
+              labelText: 'Event Description',
+              hintText: 'It’s gonna be lit!',
               maxLines: 3,
             ),
-            // Location
-            TextFormField(
-              controller: _locationController,
-              decoration: InputDecoration(labelText: 'Location'),
+
+            // Event Image Placeholder (optional)
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: AppColors.lightGrey,
+                  width: 1.5,
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: eventImage != null
+                    ? Image.file(
+                        eventImage!,
+                        width: double.infinity,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      )
+                    : Container(
+                        width: double.infinity,
+                        height: 200,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.image, size: 100),
+                      ),
+              ),
             ),
-            // Public or Group Event Toggle
+            const SizedBox(height: 8),
+            // Optional: Add a button to change the event image
+            SecondaryButton(
+              onPressed: () {
+                // Implement image picking logic if needed
+              },
+              text: 'Change Event Image',
+              icon: Icons.photo_library,
+            ),
+
+            // Date Time Picker
+            const SizedBox(height: 16),
+            SecondaryButton(
+              onPressed: _selectDateTime,
+              text: eventDateTime == null
+                  ? 'Pick Date & Time'
+                  : 'Date: ${eventDateTime?.toLocal()}',
+              icon: Icons.calendar_today,
+            ),
+
+            // Location Input
+            CustomTextFormField(
+              controller: _locationController,
+              labelText: 'Location',
+              hintText: 'The TETONS!!!!',
+            ),
+
+            // Public Event Toggle
             SwitchListTile(
-              title: Text('Is this a public event?'),
+              title: const Text('Is this a public event?'),
               value: isPublicEvent,
               onChanged: (value) {
                 setState(() {
                   isPublicEvent = value;
                 });
               },
+              tileColor: Colors.grey.shade200,
+              inactiveTrackColor: Colors.grey.shade400,
+              inactiveThumbColor: Colors.grey.shade600,
+              activeColor: AppColors.mediumGreen,
+              activeTrackColor: AppColors.lightGreen,
             ),
-            // Date and Time Picker
-            ElevatedButton.icon(
-              onPressed: _selectDateTime,
-              icon: Icon(Icons.calendar_today),
-              label: Text(eventDateTime == null
-                  ? 'Pick Date & Time'
-                  : 'Date: ${eventDateTime?.toLocal().toString().split(' ')[0]}'),
-            ),
-            // Update Button
-            ElevatedButton(
+
+            // Update Event Button
+            const SizedBox(height: 16),
+            PrimaryButton(
               onPressed: _updateEvent,
-              child: Text('Update Event'),
+              text: 'Update Event',
             ),
-            // Delete Button
+
+            // Delete Event Button
+            const SizedBox(height: 8),
             ElevatedButton(
               onPressed: _deleteEvent,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: Text('Delete Event'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.red,
+              ),
+              child: const Text('Delete Event'),
             ),
           ],
         ),
