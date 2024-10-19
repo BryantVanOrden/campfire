@@ -48,7 +48,7 @@ class _HomePageState extends State<HomePage> {
       FeedPage(),
       const GroupsPage(),
       const ChatsPage(),
-      CallsPage(userId: userId!), // Pass the dynamic userId to CallsPage
+      CallPage(), // Pass the dynamic userId to CallsPage
       const ProfilePage(),
     ];
 

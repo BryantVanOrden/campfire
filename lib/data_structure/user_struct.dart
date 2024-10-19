@@ -1,5 +1,6 @@
-import 'package:latlong2/latlong.dart'; // Import LatLng for location
-import 'package:flutter_webrtc/flutter_webrtc.dart'; // For RTCIceCandidate
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 class User {
   String uid;
@@ -10,9 +11,9 @@ class User {
   DateTime dateOfBirth;
   String displayName;
   LatLng location;
-  String? callOffer; // Nullable string to store SDP offer
-  String? callAnswer; // Nullable string to store SDP answer
-  List<RTCIceCandidate>? iceCandidates; // Store RTCIceCandidates directly
+  String? callOffer;
+  String? callAnswer;
+  List<RTCIceCandidate>? iceCandidates;
 
   User({
     required this.uid,
@@ -28,7 +29,7 @@ class User {
     this.iceCandidates,
   });
 
-  // Convert the User object to JSON (e.g., for Firestore storage)
+  // Convert the User object to JSON for Firestore
   Map<String, dynamic> toJson() {
     return {
       'uid': uid,
@@ -44,18 +45,15 @@ class User {
       'displayName': displayName,
       'callOffer': callOffer,
       'callAnswer': callAnswer,
-      // Convert iceCandidates to a List of Maps to store in Firestore
-      'iceCandidates': iceCandidates
-          ?.map((candidate) => {
-                'candidate': candidate.candidate,
-                'sdpMid': candidate.sdpMid,
-                'sdpMLineIndex': candidate.sdpMLineIndex,
-              })
-          .toList(),
+      'iceCandidates': iceCandidates?.map((candidate) => {
+        'candidate': candidate.candidate,
+        'sdpMid': candidate.sdpMid,
+        'sdpMLineIndex': candidate.sdpMLineIndex,
+      }).toList(),
     };
   }
 
-  // Convert JSON data to a User object
+  // Convert Firestore JSON to a User object
   static User fromJson(Map<String, dynamic> json) {
     return User(
       uid: json['uid'],
@@ -71,7 +69,6 @@ class User {
       displayName: json["displayName"],
       callOffer: json['callOffer'],
       callAnswer: json['callAnswer'],
-      // Convert the JSON iceCandidates list back into a list of RTCIceCandidate objects
       iceCandidates: json['iceCandidates'] != null
           ? (json['iceCandidates'] as List)
               .map((c) => RTCIceCandidate(
@@ -82,5 +79,46 @@ class User {
               .toList()
           : null,
     );
+  }
+
+  // Save user data to Firestore
+  Future<void> saveToFirestore() async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    await firestore.collection('users').doc(uid).set(toJson());
+  }
+
+  // Fetch user data from Firestore
+  static Future<User?> fetchFromFirestore(String uid) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    DocumentSnapshot doc = await firestore.collection('users').doc(uid).get();
+    if (doc.exists) {
+      return User.fromJson(doc.data() as Map<String, dynamic>);
+    }
+    return null;
+  }
+
+  // Update user's callOffer and callAnswer in Firestore
+  Future<void> updateCallData({String? newCallOffer, String? newCallAnswer}) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    Map<String, dynamic> updateData = {};
+    if (newCallOffer != null) {
+      updateData['callOffer'] = newCallOffer;
+    }
+    if (newCallAnswer != null) {
+      updateData['callAnswer'] = newCallAnswer;
+    }
+    await firestore.collection('users').doc(uid).update(updateData);
+  }
+
+  // Update user's ICE candidates in Firestore
+  Future<void> updateIceCandidates(List<RTCIceCandidate> candidates) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    await firestore.collection('users').doc(uid).update({
+      'iceCandidates': candidates.map((candidate) => {
+        'candidate': candidate.candidate,
+        'sdpMid': candidate.sdpMid,
+        'sdpMLineIndex': candidate.sdpMLineIndex,
+      }).toList(),
+    });
   }
 }
