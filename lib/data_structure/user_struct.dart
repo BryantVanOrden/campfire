@@ -7,6 +7,7 @@ class User {
   List<String>? groupIds;
   String? profileImageLink;
   DateTime dateOfBirth;
+  String displayName;
   LatLng location;
   String? callOffer; // Nullable string to store SDP offer
   String? callAnswer; // Nullable string to store SDP answer
@@ -19,6 +20,7 @@ class User {
     this.groupIds,
     this.profileImageLink,
     required this.dateOfBirth,
+    required this.displayName,
     required this.location,
     this.callOffer,
     this.callAnswer,
@@ -37,6 +39,7 @@ class User {
         'latitude': location.latitude,
         'longitude': location.longitude,
       },
+      'displayName': displayName,
       'callOffer': callOffer,
       'callAnswer': callAnswer,
       'iceCandidates': iceCandidates,
@@ -55,6 +58,7 @@ class User {
         json['location']['latitude'],
         json['location']['longitude'],
       ),
+      displayName: json["displayName"],
       callOffer: json['callOffer'],
       callAnswer: json['callAnswer'],
       iceCandidates: json['iceCandidates']?.cast<Map<String, dynamic>>(),
