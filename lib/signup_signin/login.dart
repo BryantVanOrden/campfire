@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:campfire/theme/app_colors.dart';
+import 'package:campfire/theme/app_theme.dart';
 
 class SignUpLoginPage extends StatefulWidget {
   @override
@@ -29,21 +31,26 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
       try {
         UserCredential userCredential =
             await _auth.createUserWithEmailAndPassword(
-          email: _emailController.text,
-          password: _passwordController.text,
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
         );
 
         // Create user in Firestore
         await _firestore.collection('users').doc(userCredential.user?.uid).set({
           'uid': userCredential.user?.uid,
-          'email': _emailController.text,
-          'location': _locationController.text,
+          'email': _emailController.text.trim(),
+          'location': _locationController.text.trim(),
           'dateOfBirth': _dateOfBirth?.toIso8601String(),
           'interests': [],
           'groupIds': [],
           'profileImageLink': null,
         });
 
+        print(
+            "User registered and saved to Firestore: ${userCredential.user?.uid}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Sign Up Successful')),
+        );
         // After successful sign-up, send the user to the home page
         Navigator.pushReplacementNamed(context, '/home');
       } on FirebaseAuthException catch (e) {
@@ -60,9 +67,14 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
     if (_formKey.currentState!.validate()) {
       try {
         await _auth.signInWithEmailAndPassword(
-          email: _emailController.text,
-          password: _passwordController.text,
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
         );
+        print("Login successful");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login Successful')),
+        );
+        // Navigate to the next screen or home page after successful login
         
         // After successful login, navigate to the home page
         Navigator.pushReplacementNamed(context, '/home');
@@ -82,6 +94,23 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
       initialDate: DateTime(2000),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.darkGreen, // Header background color
+              onPrimary: Colors.white, // Header text color
+              onSurface: Colors.black, // Body text color
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.darkGreen, // Button text color
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (pickedDate != null) {
       setState(() {
@@ -93,8 +122,11 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Sign Up/Login')),
-      body: Padding(
+      appBar: AppBar(
+        title: Text('Sign Up/Login'),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
@@ -102,8 +134,9 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
             Container(
               height: 50,
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
+                color: Colors.white, // Use scaffold background color
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.darkGreen),
               ),
               child: Row(
                 children: [
@@ -116,16 +149,19 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          color: _isLogin ? Colors.blue : Colors.transparent,
+                          color: _isLogin ? AppColors.darkGreen : Colors.transparent,
                           borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(12),
-                              bottomLeft: Radius.circular(12)),
+                            topLeft: Radius.circular(12),
+                            bottomLeft: Radius.circular(12),
+                          ),
                         ),
                         child: Center(
                           child: Text(
                             'Login',
                             style: TextStyle(
-                                color: _isLogin ? Colors.white : Colors.black),
+                              color: _isLogin ? Colors.white : AppColors.darkGreen,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -140,16 +176,19 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          color: !_isLogin ? Colors.blue : Colors.transparent,
+                          color: !_isLogin ? AppColors.darkGreen : Colors.transparent,
                           borderRadius: BorderRadius.only(
-                              topRight: Radius.circular(12),
-                              bottomRight: Radius.circular(12)),
+                            topRight: Radius.circular(12),
+                            bottomRight: Radius.circular(12),
+                          ),
                         ),
                         child: Center(
                           child: Text(
                             'Sign Up',
                             style: TextStyle(
-                                color: !_isLogin ? Colors.white : Colors.black),
+                              color: !_isLogin ? Colors.white : AppColors.darkGreen,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -164,31 +203,49 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
               child: Container(
                 padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: Colors.white, // Use a consistent background color
                   borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.darkGreen.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 8,
+                      offset: Offset(0, 4), // changes position of shadow
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
+                    // Email Field
                     TextFormField(
                       controller: _emailController,
-                      decoration: InputDecoration(labelText: 'Email'),
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: Icon(Icons.email, color: AppColors.darkGreen),
+                      ),
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null || value.trim().isEmpty) {
                           return 'Please enter your email';
+                        }
+                        // Basic email format validation
+                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value.trim())) {
+                          return 'Please enter a valid email';
                         }
                         return null;
                       },
                     ),
+                    SizedBox(height: 16),
+                    // Password Field
                     TextFormField(
                       controller: _passwordController,
                       decoration: InputDecoration(
                         labelText: 'Password',
+                        prefixIcon: Icon(Icons.lock, color: AppColors.darkGreen),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _passwordVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                            _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                            color: AppColors.darkGreen,
                           ),
                           onPressed: () {
                             setState(() {
@@ -199,35 +256,63 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                       ),
                       obscureText: !_passwordVisible,
                       validator: (value) {
-                        if (value == null || value.length < 6) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        if (value.trim().length < 6) {
                           return 'Password must be at least 6 characters';
                         }
                         return null;
                       },
                     ),
+                    SizedBox(height: 16),
                     if (!_isLogin) ...[
-                      // Additional fields for Sign-Up
+                      // Location Field
                       TextFormField(
                         controller: _locationController,
-                        decoration: InputDecoration(labelText: 'Location'),
+                        decoration: InputDecoration(
+                          labelText: 'Location',
+                          prefixIcon: Icon(Icons.location_on, color: AppColors.darkGreen),
+                        ),
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
+                          if (value == null || value.trim().isEmpty) {
                             return 'Please enter your location';
                           }
                           return null;
                         },
                       ),
-                      ElevatedButton(
-                        onPressed: _selectDateOfBirth,
-                        child: Text(_dateOfBirth == null
-                            ? 'Select Date of Birth'
-                            : 'DOB: ${_dateOfBirth!.toLocal()}'),
+                      SizedBox(height: 16),
+                      // Date of Birth Picker
+                      GestureDetector(
+                        onTap: _selectDateOfBirth,
+                        child: AbsorbPointer(
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                              labelText: 'Date of Birth',
+                              prefixIcon: Icon(Icons.calendar_today, color: AppColors.darkGreen),
+                              hintText: _dateOfBirth == null
+                                  ? 'Select Date of Birth'
+                                  : '${_dateOfBirth!.day}/${_dateOfBirth!.month}/${_dateOfBirth!.year}',
+                            ),
+                            validator: (value) {
+                              if (_dateOfBirth == null) {
+                                return 'Please select your date of birth';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
                       ),
+                      SizedBox(height: 16),
                     ],
                     SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _isLogin ? _login : _signUp,
-                      child: Text(_isLogin ? 'Login' : 'Sign Up'),
+                    // Submit Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isLogin ? _login : _signUp,
+                        child: Text(_isLogin ? 'Login' : 'Sign Up'),
+                      ),
                     ),
                   ],
                 ),
