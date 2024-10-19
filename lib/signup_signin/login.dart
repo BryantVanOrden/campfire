@@ -44,8 +44,8 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
           'profileImageLink': null,
         });
 
-        print(
-            "User registered and saved to Firestore: ${userCredential.user?.uid}");
+        // After successful sign-up, send the user to the home page
+        Navigator.pushReplacementNamed(context, '/home');
       } on FirebaseAuthException catch (e) {
         print("Sign Up Error: $e");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -63,10 +63,9 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
           email: _emailController.text,
           password: _passwordController.text,
         );
-        print("Login successful");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login Successful')),
-        );
+        
+        // After successful login, navigate to the home page
+        Navigator.pushReplacementNamed(context, '/home');
       } on FirebaseAuthException catch (e) {
         print("Login Error: $e");
         ScaffoldMessenger.of(context).showSnackBar(
