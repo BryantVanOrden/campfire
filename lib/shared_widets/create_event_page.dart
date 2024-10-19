@@ -23,7 +23,8 @@ class _CreateEventPageState extends State<CreateEventPage> {
   bool isPublicEvent = false;
 
   final TextEditingController _eventNameController = TextEditingController();
-  final TextEditingController _eventDescriptionController = TextEditingController();
+  final TextEditingController _eventDescriptionController =
+      TextEditingController();
   final TextEditingController _locationController = TextEditingController();
 
   List<Map<String, String>> userGroups = [];
@@ -37,11 +38,13 @@ class _CreateEventPageState extends State<CreateEventPage> {
   Future<void> _loadUserGroups() async {
     User? user = _auth.currentUser;
     if (user != null) {
-      DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+      DocumentSnapshot userDoc =
+          await _firestore.collection('users').doc(user.uid).get();
       List<String> groupIds = List<String>.from(userDoc['groupIds'] ?? []);
-      
+
       for (String groupId in groupIds) {
-        DocumentSnapshot groupDoc = await _firestore.collection('groups').doc(groupId).get();
+        DocumentSnapshot groupDoc =
+            await _firestore.collection('groups').doc(groupId).get();
         if (groupDoc.exists) {
           String groupName = groupDoc['name'];
           userGroups.add({'id': groupId, 'name': groupName});
@@ -93,14 +96,34 @@ class _CreateEventPageState extends State<CreateEventPage> {
     if (eventImage == null) return null;
 
     try {
-      String fileName = 'event_images/${DateTime.now().millisecondsSinceEpoch}.jpg';
-      UploadTask uploadTask = _storage.ref().child(fileName).putFile(eventImage!);
+      String fileName =
+          'event_images/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      UploadTask uploadTask =
+          _storage.ref().child(fileName).putFile(eventImage!);
       TaskSnapshot taskSnapshot = await uploadTask;
       return await taskSnapshot.ref.getDownloadURL();
     } catch (e) {
       print('Error uploading image: $e');
       return null;
     }
+  }
+
+  Future<void> _sendEventToGroupChat(String groupId, String eventName,
+      String? imageUrl, DateTime? eventDateTime, String? location,
+      {required String chatType}) async {
+    await _firestore
+        .collection('groups')
+        .doc(groupId)
+        .collection(chatType == 'public' ? 'publicMessages' : 'messages')
+        .add({
+      'text': 'Event Created: $eventName',
+      'imageLink': imageUrl,
+      'location': location,
+      'dateTime':
+          eventDateTime != null ? Timestamp.fromDate(eventDateTime) : null,
+      'type': 'event', // Specify this is an event
+      'timestamp': FieldValue.serverTimestamp(), // Record the time
+    });
   }
 
   void _createEvent() async {
@@ -113,17 +136,44 @@ class _CreateEventPageState extends State<CreateEventPage> {
 
     String? imageUrl = await _uploadEventImage();
 
+    // Save event details in Firestore under the "events" collection
     await _firestore.collection('events').add({
       'name': _eventNameController.text,
       'description': _eventDescriptionController.text,
       'imageLink': imageUrl,
       'groupId': selectedGroupId,
       'location': _locationController.text,
-      'dateTime': eventDateTime != null ? Timestamp.fromDate(eventDateTime!) : null,
+      'dateTime':
+          eventDateTime != null ? Timestamp.fromDate(eventDateTime!) : null,
       'isPublic': isPublicEvent,
     });
 
-    Navigator.pop(context); // Go back to the previous page after creating the event
+    // After creating the event, send a message to the group's chat
+    if (selectedGroupId != null) {
+      // Send event to members' chat (always)
+      await _sendEventToGroupChat(
+        selectedGroupId!,
+        _eventNameController.text,
+        imageUrl,
+        eventDateTime,
+        _locationController.text,
+        chatType: 'members',
+      );
+
+      // If the event is public, also send it to the public chat
+      if (isPublicEvent) {
+        await _sendEventToGroupChat(
+          selectedGroupId!,
+          _eventNameController.text,
+          imageUrl,
+          eventDateTime,
+          _locationController.text,
+          chatType: 'public',
+        );
+      }
+    }
+
+    Navigator.pop(context); // Go back after event creation
   }
 
   @override

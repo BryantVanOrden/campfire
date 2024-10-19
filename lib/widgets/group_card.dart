@@ -1,5 +1,7 @@
+import 'package:campfire/screens/group_chat_page.dart';
 import 'package:flutter/material.dart';
 import '../data_structure/group_struct.dart';
+
 
 class GroupCard extends StatelessWidget {
   final Group group;
@@ -9,23 +11,29 @@ class GroupCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0), // Doubled margins
+      margin: EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
       child: ListTile(
         leading: CircleAvatar(
-          radius: 50, // Doubled size of the avatar
+          radius: 50, 
           backgroundImage: group.imageUrl != null
               ? NetworkImage(group.imageUrl!)
-              : null, // Show the image if available
+              : null, 
           child: group.imageUrl == null
-              ? Icon(Icons.group, size: 60) // Doubled size of the default icon
+              ? Icon(Icons.group, size: 60)
               : null,
         ),
         title: Text(
           group.name,
-          style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold), // Doubled font size
+          style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
         ),
         onTap: () {
-          // Handle tap event
+          // Navigate to GroupChatPage when the group card is tapped
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => GroupChatPage(groupId: group.groupId, groupName: group.name),
+            ),
+          );
         },
       ),
     );

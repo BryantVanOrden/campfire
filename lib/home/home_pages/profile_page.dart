@@ -1,8 +1,13 @@
+import 'package:campfire/shared_widets/edit_event_page.dart';
+import 'package:campfire/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:provider/provider.dart';
+
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -11,14 +16,34 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final ImagePicker _picker = ImagePicker();
   User? user;
+  List<String> moderatorGroupIds = [];
 
   @override
   void initState() {
     super.initState();
     user = _auth.currentUser;
+    _loadModeratorGroups(); // Load the groups where the user is a moderator
+  }
+
+  // Load groups where the current user is a moderator
+  Future<void> _loadModeratorGroups() async {
+    if (user != null) {
+      // Fetch groups where the current user is listed as a moderator
+      QuerySnapshot groupSnapshot = await _firestore
+          .collection('groups')
+          .where('moderators', arrayContains: user!.uid)
+          .get();
+
+      setState(() {
+        // Store the group IDs where the user is a moderator
+        moderatorGroupIds =
+            groupSnapshot.docs.map((doc) => doc.id).toList();
+      });
+    }
   }
 
   // Function to show the full-screen profile picture
@@ -95,39 +120,100 @@ class _ProfilePageState extends State<ProfilePage> {
     Navigator.pushReplacementNamed(context, '/login');
   }
 
+  // Fetch all events from groups where the user is a moderator
+  Stream<QuerySnapshot> _getModeratorGroupEvents() {
+    if (moderatorGroupIds.isEmpty) {
+      return Stream.empty();
+    }
+    return _firestore
+        .collection('events')
+        .where('groupId', whereIn: moderatorGroupIds)
+        .snapshots();
+  }
+
+
   @override
-  Widget build(BuildContext context) {
+    Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Tap the profile picture to view and change it
-              GestureDetector(
-                onTap: () => _showFullScreenProfilePicture(context),
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundImage: user?.photoURL != null
-                      ? NetworkImage(user!.photoURL!)
-                      : AssetImage('assets/images/default_profile_pic.jpg') as ImageProvider,
-                ),
-              ),
-              SizedBox(height: 20),
-              // Display user email
-              Text(
-                user?.email ?? 'No Email',
-                style: TextStyle(fontSize: 20),
-              ),
-              SizedBox(height: 20),
-              // Logout button
-              ElevatedButton(
-                onPressed: () => _logout(context),
-                child: Text('Logout'),
-              ),
-            ],
+      appBar: AppBar(
+        title: Text('Profile Page'),
+        actions: [
+          IconButton(
+            icon: Icon(
+              themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+            ),
+            onPressed: () {
+              themeProvider.toggleTheme(); // Toggle between light and dark mode
+            },
           ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: () => _showFullScreenProfilePicture(context),
+              child: CircleAvatar(
+                radius: 50,
+                backgroundImage: user?.photoURL != null
+                    ? NetworkImage(user!.photoURL!)
+                    : AssetImage('assets/images/default_profile_pic.jpg')
+                        as ImageProvider,
+              ),
+            ),
+            SizedBox(height: 20),
+            Text(
+              user?.email ?? 'No Email',
+              style: TextStyle(fontSize: 20),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => _logout(context),
+              child: Text('Logout'),
+            ),
+            SizedBox(height: 30),
+            Text(
+              'Moderated Group Events',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            StreamBuilder<QuerySnapshot>(
+              stream: _getModeratorGroupEvents(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                var events = snapshot.data!.docs;
+                if (events.isEmpty) {
+                  return Text('No events available.');
+                }
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: events.length,
+                  itemBuilder: (context, index) {
+                    var event = events[index];
+                    return ListTile(
+                      title: Text(event['name'] ?? 'No Name'),
+                      subtitle: Text(event['description'] ?? 'No Description'),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditEventPage(event: event),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
