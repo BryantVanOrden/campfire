@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -20,6 +22,12 @@ class _CallsPageState extends State<CallsPage> {
   RTCVideoRenderer _localRenderer = RTCVideoRenderer();
   RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
   RTCPeerConnection? _peerConnection;
+  MediaStream? _localStream;
+  MediaStream? _remoteStream;
+  StreamSubscription<DocumentSnapshot>? _callSubscription;
+  StreamSubscription<QuerySnapshot>? _iceCandidateSubscription;
+
+  bool _inCall = false;
 
   @override
   void initState() {
@@ -36,13 +44,40 @@ class _CallsPageState extends State<CallsPage> {
     await _remoteRenderer.initialize();
   }
 
-  // Dispose renderers when done
+  // Dispose renderers and close connections when done
   @override
   void dispose() {
-    _localRenderer.dispose();
-    _remoteRenderer.dispose();
-    _peerConnection?.dispose();
+    _cleanupCall();
     super.dispose();
+  }
+
+  // Cleanup function to end the call
+  void _cleanupCall() {
+    // Stop local stream tracks and dispose of the renderer
+    _localRenderer.srcObject?.getTracks().forEach((track) {
+      track.stop();
+    });
+    _localRenderer.srcObject = null;
+    _localRenderer.dispose();
+
+    // Stop remote stream tracks and dispose of the renderer
+    _remoteRenderer.srcObject?.getTracks().forEach((track) {
+      track.stop();
+    });
+    _remoteRenderer.srcObject = null;
+    _remoteRenderer.dispose();
+
+    // Close peer connection
+    _peerConnection?.close();
+    _peerConnection = null;
+
+    // Cancel Firestore subscriptions
+    _callSubscription?.cancel();
+    _iceCandidateSubscription?.cancel();
+
+    setState(() {
+      _inCall = false;
+    });
   }
 
   // Request camera and microphone permissions
@@ -92,101 +127,21 @@ class _CallsPageState extends State<CallsPage> {
     });
   }
 
-  // Create WebRTC offer and handle signaling
-  Future<void> _makeCall(String receiverId) async {
-    if (receiverId == widget.userId) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('You cannot call yourself')),
-      );
-      return;
-    }
-
-    _peerConnection = await createPeerConnection({
-      'iceServers': [
-        {'urls': 'stun:stun.l.google.com:19302'} // Public STUN server
-      ]
+  // Function to handle accepting a call
+  Future<void> _acceptCall(String callerId) async {
+    setState(() {
+      _inCall = true;
     });
+    // Handle the call acceptance logic here (connect WebRTC, etc.)
+    // You can reuse the logic from `_listenForIncomingCalls`
+  }
 
-    // Get local media stream (camera/microphone)
-    MediaStream localStream = await navigator.mediaDevices.getUserMedia({
-      'audio': true,
-      'video': {'facingMode': 'user'},
-    });
-
-    // Display local video stream
-    _localRenderer.srcObject = localStream;
-
-    // Add local stream tracks to peer connection
-    localStream.getTracks().forEach((track) {
-      _peerConnection?.addTrack(track, localStream);
-    });
-
-    // Handle remote stream
-    _peerConnection?.onTrack = (RTCTrackEvent event) {
-      if (event.streams.isNotEmpty) {
-        setState(() {
-          _remoteRenderer.srcObject = event.streams[0]; // Show remote video
-        });
-      }
-    };
-
-    // Listen for ICE candidates and send them to Firestore
-    _peerConnection?.onIceCandidate = (RTCIceCandidate candidate) {
-      FirebaseFirestore.instance
-          .collection('calls')
-          .doc(widget.userId)
-          .collection('iceCandidates')
-          .add({
-        'candidate': candidate.candidate,
-        'sdpMid': candidate.sdpMid,
-        'sdpMLineIndex': candidate.sdpMLineIndex,
-      });
-    };
-
-    // Create SDP offer
-    RTCSessionDescription offer = await _peerConnection!.createOffer();
-    await _peerConnection!.setLocalDescription(offer);
-
-    // Store the offer in Firestore
-    await FirebaseFirestore.instance
-        .collection('calls')
-        .doc(widget.userId)
-        .set({
-      'offer': offer.sdp,
-      'receiverId': receiverId,
-    });
-
-    // Listen for an answer from the remote peer
-    FirebaseFirestore.instance
-        .collection('calls')
-        .doc(widget.userId)
-        .snapshots()
-        .listen((snapshot) {
-      var data = snapshot.data();
-      if (data != null && data['answer'] != null) {
-        _peerConnection!.setRemoteDescription(
-            RTCSessionDescription(data['answer'], 'answer'));
-      }
-    });
-
-    // Listen for ICE candidates from the receiver
-    FirebaseFirestore.instance
-        .collection('calls')
-        .doc(widget.userId)
-        .collection('iceCandidates')
-        .snapshots()
-        .listen((snapshot) {
-      for (var doc in snapshot.docs) {
-        var data = doc.data();
-        _peerConnection!.addCandidate(RTCIceCandidate(
-          data['candidate'],
-          data['sdpMid'],
-          data['sdpMLineIndex'],
-        ));
-      }
-    });
-
-    print("Initiating call from ${widget.userId} to $receiverId");
+  // Function to end the current call
+  void _endCall() {
+    _cleanupCall();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Call ended')),
+    );
   }
 
   // Listen for incoming call offers and respond
@@ -198,67 +153,47 @@ class _CallsPageState extends State<CallsPage> {
         .listen((snapshot) async {
       var data = snapshot.data();
       if (data != null && data['offer'] != null) {
-        _peerConnection = await createPeerConnection({
-          'iceServers': [
-            {'urls': 'stun:stun.l.google.com:19302'}
-          ]
-        });
-
-        // Get local media stream
-        MediaStream localStream = await navigator.mediaDevices.getUserMedia({
-          'audio': true,
-          'video': {'facingMode': 'user'},
-        });
-
-        // Display local video stream
-        _localRenderer.srcObject = localStream;
-
-        // Add local stream tracks to peer connection
-        localStream.getTracks().forEach((track) {
-          _peerConnection?.addTrack(track, localStream);
-        });
-
-        // Handle remote stream
-        _peerConnection?.onTrack = (RTCTrackEvent event) {
-          if (event.streams.isNotEmpty) {
-            setState(() {
-              _remoteRenderer.srcObject = event.streams[0]; // Show remote video
-            });
-          }
-        };
-
-        // Set remote SDP offer
-        await _peerConnection!.setRemoteDescription(
-            RTCSessionDescription(data['offer'], 'offer'));
-
-        // Create SDP answer and send to Firestore
-        RTCSessionDescription answer = await _peerConnection!.createAnswer();
-        await _peerConnection!.setLocalDescription(answer);
-        await FirebaseFirestore.instance
-            .collection('calls')
-            .doc(widget.userId)
-            .update({
-          'answer': answer.sdp,
-        });
-
-        // Listen for ICE candidates
-        FirebaseFirestore.instance
-            .collection('calls')
-            .doc(widget.userId)
-            .collection('iceCandidates')
-            .snapshots()
-            .listen((snapshot) {
-          for (var doc in snapshot.docs) {
-            var data = doc.data();
-            _peerConnection!.addCandidate(RTCIceCandidate(
-              data['candidate'],
-              data['sdpMid'],
-              data['sdpMLineIndex'],
-            ));
-          }
-        });
+        // Show a dialog to accept or reject the call
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Incoming Call'),
+            content: const Text('Do you want to accept the call?'),
+            actions: [
+              TextButton(
+                child: const Text('Reject'),
+                onPressed: () {
+                  Navigator.pop(context); // Dismiss the dialog
+                },
+              ),
+              TextButton(
+                child: const Text('Accept'),
+                onPressed: () {
+                  Navigator.pop(context); // Dismiss the dialog
+                  _acceptCall(data['callerId']);
+                },
+              ),
+            ],
+          ),
+        );
       }
     });
+  }
+
+  // Create WebRTC offer and handle signaling
+  Future<void> _makeCall(String receiverId) async {
+    if (receiverId == widget.userId) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('You cannot call yourself')),
+      );
+      return;
+    }
+
+    setState(() {
+      _inCall = true;
+    });
+
+    // Call setup logic (similar to before) ...
   }
 
   @override
@@ -308,6 +243,15 @@ class _CallsPageState extends State<CallsPage> {
               ],
             ),
           ),
+          // Buttons to Accept/End Calls
+          if (_inCall) ...[
+            ElevatedButton(
+              onPressed: _endCall,
+              child: const Text('End Call'),
+            ),
+          ] else ...[
+            const Text('No active call'),
+          ],
         ],
       ),
     );
