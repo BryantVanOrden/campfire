@@ -1,4 +1,4 @@
-package com.example.campfire
+package com.dbj.campfire
 
 import io.flutter.embedding.android.FlutterActivity
 

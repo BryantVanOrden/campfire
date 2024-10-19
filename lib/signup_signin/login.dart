@@ -3,11 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:campfire/theme/app_colors.dart';
 import 'package:campfire/theme/app_theme.dart';
-import 'package:map_location_picker/map_location_picker.dart'; // Import for map_location_picker
-import 'package:google_maps_flutter/google_maps_flutter.dart'
-    as google; // Prefix google for Google Maps LatLng
-import 'package:latlong2/latlong.dart'
-    as latlong; // Prefix latlong for latlong2 LatLng
+import 'package:map_location_picker/map_location_picker.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart' as google;
+import 'package:latlong2/latlong.dart' as latlong;
 
 class SignUpLoginPage extends StatefulWidget {
   @override
@@ -21,7 +19,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
   // Controllers for Sign Up and Login
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  latlong.LatLng? _pickedLocation; // Use the latlong prefix here
+  latlong.LatLng? _pickedLocation; // User's picked location
   DateTime? _dateOfBirth;
 
   bool _isLogin = true; // Toggle between login and sign-up
@@ -34,7 +32,6 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
   void _signUp() async {
     if (_formKey.currentState!.validate()) {
       if (_pickedLocation == null) {
-        print("Location not picked.");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Please pick a location.')),
         );
@@ -52,9 +49,9 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
         // Save user data to Firestore
         await _firestore.collection('users').doc(userCredential.user?.uid).set({
           'uid': userCredential.user?.uid,
-          'email': _emailController.text,
+          'email': _emailController.text.trim(),
           'location':
-              "${_pickedLocation!.latitude}, ${_pickedLocation!.longitude}", // Save the formatted location string
+              "${_pickedLocation!.latitude}, ${_pickedLocation!.longitude}", // Save location
           'dateOfBirth': _dateOfBirth?.toIso8601String(),
           'interests': [],
           'groupIds': [],
@@ -82,7 +79,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
         _pickedLocation = latlong.LatLng(
           locationData.location.lat,
           locationData.location.lng,
-        ); // Use latlong.LatLng here
+        );
         print(
             "Picked location: Latitude: ${_pickedLocation!.latitude}, Longitude: ${_pickedLocation!.longitude}");
       });
@@ -97,6 +94,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Login Successful')),
         );
@@ -287,7 +285,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                 SizedBox(height: 16),
                 if (!_isLogin) ...[
                   Text(
-                    "Pick Your Location to Connect with Nearby Users", // Label above the map
+                    "Pick Your Location to Connect with Nearby Users",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -300,7 +298,6 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                       height: 400, // Reduced the height of the map
                       child: MapLocationPicker(
                         apiKey: 'AIzaSyB9-_fimhOl_uiOMMjGvf-228Ya1cwfkxM',
-                        // Remove popOnNextButtonTaped
                         onNext: (GeocodingResult? result) {
                           if (result != null) {
                             _onLocationPicked(result.geometry);
@@ -348,3 +345,8 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
     );
   }
 }
+
+
+
+
+//AIzaSyB9-_fimhOl_uiOMMjGvf-228Ya1cwfkxM

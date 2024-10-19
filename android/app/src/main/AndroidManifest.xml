@@ -23,6 +23,7 @@
             <meta-data
                 android:name="com.google.android.geo.API_KEY"
                 android:value="AIzaSyB9-_fimhOl_uiOMMjGvf-228Ya1cwfkxM" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
