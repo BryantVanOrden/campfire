@@ -141,13 +141,28 @@ class _VideoCallPageState extends State<VideoCallPage> {
       appBar: AppBar(
         title: Text('Video Call with ${widget.receiverId}'),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: RTCVideoView(_localRenderer),
-          ),
-          Expanded(
+          // Remote video feed takes up the full screen
+          Positioned.fill(
             child: RTCVideoView(_remoteRenderer),
+          ),
+          // Local video feed in the corner
+          Positioned(
+            bottom: 20,
+            right: 20,
+            width: 150,
+            height: 200,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue, width: 2),
+              ),
+              child: RTCVideoView(
+                _localRenderer,
+                mirror: true, // Mirror the local feed so it looks natural
+              ),
+            ),
           ),
         ],
       ),
