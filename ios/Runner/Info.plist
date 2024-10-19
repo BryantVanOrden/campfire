@@ -32,6 +32,14 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your app needs access to your location to show your position on the map.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Your app needs access to your location.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Your app needs access to your location while the app is in use or in the background.</string>
+	<key>io.flutter.embedded_views_preview</key>
+<true/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

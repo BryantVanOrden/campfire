@@ -19,6 +19,8 @@
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
+                 android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyB9-_fimhOl_uiOMMjGvf-228Ya1cwfkxM" /
               />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -31,11 +33,11 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.INTERNET" />
+        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+        <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+        <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+        <uses-permission android:name="android.permission.INTERNET" />
     
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
