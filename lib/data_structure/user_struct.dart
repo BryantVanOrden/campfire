@@ -3,11 +3,14 @@ import 'package:latlong2/latlong.dart'; // Import LatLng for location
 class User {
   String uid;
   String email;
-  List<String>? interests; // Nullable list of interests
-  List<String>? groupIds; // Nullable list of group IDs
-  String? profileImageLink; // Nullable link to profile image stored in Firebase
+  List<String>? interests;
+  List<String>? groupIds;
+  String? profileImageLink;
   DateTime dateOfBirth;
-  LatLng location; // LatLng object for location
+  LatLng location;
+  String? callOffer; // Nullable string to store SDP offer
+  String? callAnswer; // Nullable string to store SDP answer
+  List<Map<String, dynamic>>? iceCandidates; // To store ICE candidates
 
   User({
     required this.uid,
@@ -17,6 +20,9 @@ class User {
     this.profileImageLink,
     required this.dateOfBirth,
     required this.location,
+    this.callOffer,
+    this.callAnswer,
+    this.iceCandidates,
   });
 
   Map<String, dynamic> toJson() {
@@ -31,6 +37,9 @@ class User {
         'latitude': location.latitude,
         'longitude': location.longitude,
       },
+      'callOffer': callOffer,
+      'callAnswer': callAnswer,
+      'iceCandidates': iceCandidates,
     };
   }
 
@@ -46,6 +55,9 @@ class User {
         json['location']['latitude'],
         json['location']['longitude'],
       ),
+      callOffer: json['callOffer'],
+      callAnswer: json['callAnswer'],
+      iceCandidates: json['iceCandidates']?.cast<Map<String, dynamic>>(),
     );
   }
 }
