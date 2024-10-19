@@ -151,208 +151,198 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Toggle between Login and Sign Up
-            Container(
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.darkGreen),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _isLogin = true;
-                        });
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: _isLogin
-                              ? AppColors.darkGreen
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(12),
-                            bottomLeft: Radius.circular(12),
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Login',
-                            style: TextStyle(
-                              color:
-                                  _isLogin ? Colors.white : AppColors.darkGreen,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+        child: Form(
+          key: _formKey,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                // Toggle between Login and Sign Up
+                Container(
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.darkGreen),
                   ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _isLogin = false;
-                        });
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: !_isLogin
-                              ? AppColors.darkGreen
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(12),
-                            bottomRight: Radius.circular(12),
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Sign Up',
-                            style: TextStyle(
-                              color: !_isLogin
-                                  ? Colors.white
-                                  : AppColors.darkGreen,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 30),
-            Form(
-              key: _formKey,
-              child: Container(
-                padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.darkGreen.withOpacity(0.2),
-                      spreadRadius: 2,
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // Email Field
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon:
-                            Icon(Icons.email, color: AppColors.darkGreen),
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                            .hasMatch(value.trim())) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    // Password Field
-                    TextFormField(
-                      controller: _passwordController,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon:
-                            Icon(Icons.lock, color: AppColors.darkGreen),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _passwordVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: AppColors.darkGreen,
-                          ),
-                          onPressed: () {
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
                             setState(() {
-                              _passwordVisible = !_passwordVisible;
+                              _isLogin = true;
                             });
                           },
-                        ),
-                      ),
-                      obscureText: !_passwordVisible,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter your password';
-                        }
-                        if (value.trim().length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    if (!_isLogin) ...[
-                      // Map Location Picker using map_location_picker
-                      SizedBox(
-                        height: 300,
-                        child: MapLocationPicker(
-                          apiKey: 'YOUR_GOOGLE_MAPS_API_KEY',
-                          popOnNextButtonTaped: true,
-                          onNext: (GeocodingResult? result) {
-                            if (result != null) {
-                              _onLocationPicked(result.geometry);
-                            }
-                          },
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      // Date of Birth Picker
-                      GestureDetector(
-                        onTap: _selectDateOfBirth,
-                        child: AbsorbPointer(
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: 'Date of Birth',
-                              prefixIcon: Icon(Icons.calendar_today,
-                                  color: AppColors.darkGreen),
-                              hintText: _dateOfBirth == null
-                                  ? 'Select Date of Birth'
-                                  : '${_dateOfBirth!.day}/${_dateOfBirth!.month}/${_dateOfBirth!.year}',
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: _isLogin
+                                  ? AppColors.darkGreen
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(12),
+                                bottomLeft: Radius.circular(12),
+                              ),
                             ),
-                            validator: (value) {
-                              if (_dateOfBirth == null) {
-                                return 'Please select your date of birth';
-                              }
-                              return null;
-                            },
+                            child: Center(
+                              child: Text(
+                                'Login',
+                                style: TextStyle(
+                                  color: _isLogin
+                                      ? Colors.white
+                                      : AppColors.darkGreen,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _isLogin = false;
+                            });
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: !_isLogin
+                                  ? AppColors.darkGreen
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(12),
+                                bottomRight: Radius.circular(12),
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Sign Up',
+                                style: TextStyle(
+                                  color: !_isLogin
+                                      ? Colors.white
+                                      : AppColors.darkGreen,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ],
-                    SizedBox(height: 20),
-                    // Submit Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _isLogin ? _login : _signUp,
-                        child: Text(_isLogin ? 'Login' : 'Sign Up'),
+                  ),
+                ),
+                SizedBox(height: 30),
+                // Email Field
+                TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: Icon(Icons.email, color: AppColors.darkGreen),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter your email';
+                    }
+                    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                        .hasMatch(value.trim())) {
+                      return 'Please enter a valid email';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16),
+                // Password Field
+                TextFormField(
+                  controller: _passwordController,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: Icon(Icons.lock, color: AppColors.darkGreen),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _passwordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: AppColors.darkGreen,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _passwordVisible = !_passwordVisible;
+                        });
+                      },
+                    ),
+                  ),
+                  obscureText: !_passwordVisible,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter your password';
+                    }
+                    if (value.trim().length < 6) {
+                      return 'Password must be at least 6 characters';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16),
+                if (!_isLogin) ...[
+                  Text(
+                    "Pick Your Location to Connect with Nearby Users", // Label above the map
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkGreen,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: SizedBox(
+                      height: 400, // Reduced the height of the map
+                      child: MapLocationPicker(
+                        apiKey: 'AIzaSyB9-_fimhOl_uiOMMjGvf-228Ya1cwfkxM',
+                        // Remove popOnNextButtonTaped
+                        onNext: (GeocodingResult? result) {
+                          if (result != null) {
+                            _onLocationPicked(result.geometry);
+                          }
+                        },
                       ),
                     ),
-                  ],
+                  ),
+                  SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: _selectDateOfBirth,
+                    child: AbsorbPointer(
+                      child: TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Date of Birth',
+                          prefixIcon: Icon(Icons.calendar_today,
+                              color: AppColors.darkGreen),
+                          hintText: _dateOfBirth == null
+                              ? 'Select Date of Birth'
+                              : '${_dateOfBirth!.day}/${_dateOfBirth!.month}/${_dateOfBirth!.year}',
+                        ),
+                        validator: (value) {
+                          if (_dateOfBirth == null) {
+                            return 'Please select your date of birth';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+                SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLogin ? _login : _signUp,
+                    child: Text(_isLogin ? 'Login' : 'Sign Up'),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
