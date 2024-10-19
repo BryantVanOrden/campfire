@@ -1,3 +1,4 @@
+import 'package:campfire/providers/feed_provider.dart';
 import 'package:campfire/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +34,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<GroupProvider>(
           create: (_) => GroupProvider(),
         ),
+        ChangeNotifierProvider(create: (_) => FeedProvider()),
         ChangeNotifierProvider<ThemeProvider>(
           create: (_) =>
               ThemeProvider()..toggleTheme(), // ThemeProvider initialization

@@ -1,0 +1,201 @@
+// lib/widgets/event_card.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:campfire/screens/group_chat_page.dart';
+import 'package:campfire/theme/app_colors.dart';
+
+class EventCard extends StatelessWidget {
+  final DocumentSnapshot event;
+  final List<String> userGroupIds;
+
+  const EventCard({
+    Key? key,
+    required this.event,
+    required this.userGroupIds,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    String eventName = event['name'] ?? 'No Name';
+    String eventDescription = event['description'] ?? 'No Description';
+    String? eventImageUrl = event['imageLink'];
+    String? location = event['location'];
+    String? groupId = event['groupId'];
+
+    bool isPublic = event['isPublic'] ?? false;
+    bool canShowEvent = isPublic || (groupId != null && userGroupIds.contains(groupId));
+
+    if (!canShowEvent) return SizedBox.shrink(); // Skip if user can't see this event
+
+    return InkWell(
+      onTap: () async {
+        if (groupId != null) {
+          // Fetch the group details to get the group name
+          DocumentSnapshot groupSnapshot = await FirebaseFirestore.instance
+              .collection('groups')
+              .doc(groupId)
+              .get();
+
+          if (groupSnapshot.exists) {
+            String groupName = groupSnapshot['name'] ?? 'Unknown Group';
+
+            // Navigate to the GroupChatPage with groupId and groupName
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => GroupChatPage(
+                  groupId: groupId,
+                  groupName: groupName,
+                ),
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Group not found')),
+            );
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Group ID is missing')),
+          );
+        }
+      },
+      child: Card(
+        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16), // Rounded corners
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Event Image with rounded top corners
+            if (eventImageUrl != null)
+              ClipRRect(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+                child: Image.network(
+                  eventImageUrl,
+                  width: double.infinity,
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
+              )
+            else
+              // Placeholder image if eventImageUrl is null
+              ClipRRect(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+                child: Container(
+                  width: double.infinity,
+                  height: 200,
+                  color: Colors.grey.shade300,
+                  child: Icon(
+                    Icons.event,
+                    size: 100,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ),
+
+            // Event Details
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Event Name
+                  Text(
+                    eventName,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkGreen,
+                    ),
+                  ),
+
+                  // Small spacing after the event name
+                  SizedBox(height: 4),
+
+                  // Event Description
+                  Text(
+                    eventDescription,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppColors.darkGreen,
+                    ),
+                  ),
+
+                  // Variable spacing before the location
+                  SizedBox(height: 12),
+
+                  // Location (if available)
+                  if (location != null)
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          color: AppColors.mediumGreen,
+                          size: 20,
+                        ),
+                        SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            location,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.mediumGreen,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                  // Adjusted spacing
+                  if (location != null) SizedBox(height: 8),
+
+                  // Group Name (if available)
+                  if (groupId != null)
+                    FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseFirestore.instance
+                          .collection('groups')
+                          .doc(groupId)
+                          .get(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.done &&
+                            snapshot.data?.exists == true) {
+                          return Row(
+                            children: [
+                              Icon(
+                                Icons.group,
+                                color: AppColors.lightGrey,
+                                size: 20,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                snapshot.data!['name'],
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.lightGrey,
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+                        return SizedBox.shrink(); // Don't show anything while loading
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

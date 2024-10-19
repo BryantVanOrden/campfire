@@ -9,6 +9,8 @@ class CustomTextFormField extends StatelessWidget {
   final TextInputType keyboardType;
   final int maxLines;
   final EdgeInsets? margin; // Optional margin
+  final String? Function(String?)? validator; // Add validator
+  final void Function(String?)? onSaved; // Add onSaved
 
   const CustomTextFormField({
     Key? key,
@@ -19,12 +21,14 @@ class CustomTextFormField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.maxLines = 1, // Default to 1 line
     this.margin, // Default margin is null (no margin)
+    this.validator, // Optional validator function
+    this.onSaved, // Optional onSaved function
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: margin ?? EdgeInsets.symmetric(vertical: 8), // Apply margin if provided
+      margin: margin ?? const EdgeInsets.symmetric(vertical: 8), // Apply margin if provided
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start, // Align the label to the start
         children: [
@@ -45,7 +49,7 @@ class CustomTextFormField extends StatelessWidget {
             obscureText: obscureText,
             keyboardType: keyboardType,
             maxLines: maxLines,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.black, // Text color for the input
               fontSize: 16,
             ),
@@ -57,7 +61,7 @@ class CustomTextFormField extends StatelessWidget {
               ),
               filled: true,
               fillColor: Colors.white, // White background
-              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(
@@ -80,6 +84,8 @@ class CustomTextFormField extends StatelessWidget {
                 ),
               ),
             ),
+            validator: validator, // Add the validator function
+            onSaved: onSaved, // Add the onSaved function
           ),
         ],
       ),
