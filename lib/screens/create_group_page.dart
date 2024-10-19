@@ -26,30 +26,50 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
   String _groupName = '';
   File? _groupImage;
-  String? _groupImageUrl;
+  File? _eventImage;
 
   final ImagePicker _picker = ImagePicker();
 
-  Future<void> _pickGroupImage() async {
+  // Function to pick images for both group and event, determined by an identifier
+  Future<void> _pickImage({required String type}) async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() {
-        _groupImage = File(image.path);
+        if (type == 'group') {
+          _groupImage = File(image.path);
+        } else if (type == 'event') {
+          _eventImage = File(image.path);
+        }
       });
     }
   }
 
+  // Function to upload the group image
   Future<String?> _uploadGroupImage() async {
     if (_groupImage == null) return null;
 
     try {
       String fileName = 'group_images/${const Uuid().v4()}.jpg';
-      UploadTask uploadTask =
-          _storage.ref().child(fileName).putFile(_groupImage!);
+      UploadTask uploadTask = _storage.ref().child(fileName).putFile(_groupImage!);
       TaskSnapshot taskSnapshot = await uploadTask;
       return await taskSnapshot.ref.getDownloadURL();
     } catch (e) {
       print('Error uploading group image: $e');
+      return null;
+    }
+  }
+
+  // Function to upload the event image
+  Future<String?> _uploadEventImage() async {
+    if (_eventImage == null) return null;
+
+    try {
+      String fileName = 'event_images/${const Uuid().v4()}.jpg';
+      UploadTask uploadTask = _storage.ref().child(fileName).putFile(_eventImage!);
+      TaskSnapshot taskSnapshot = await uploadTask;
+      return await taskSnapshot.ref.getDownloadURL();
+    } catch (e) {
+      print('Error uploading event image: $e');
       return null;
     }
   }
@@ -59,7 +79,10 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
       _formKey.currentState!.save();
 
       // Upload the group image if one is selected
-      String? imageUrl = await _uploadGroupImage();
+      String? groupImageUrl = await _uploadGroupImage();
+
+      // Upload the event image if one is selected
+      String? eventImageUrl = await _uploadEventImage();
 
       // Generate a new group ID
       String groupId = const Uuid().v4();
@@ -83,7 +106,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
         'moderators': [userId], // Add the current user as a moderator
         'publicMembers': [],
         'bannedUids': [],
-        'imageUrl': imageUrl,
+        'imageUrl': groupImageUrl, // Store the group image URL
+        'eventImageUrl': eventImageUrl, // Store the event image URL (optional)
       });
 
       // Add the groupId to the user's groupIds
@@ -100,7 +124,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
         moderators: [userId],
         publicMembers: [],
         bannedUids: [],
-        imageUrl: imageUrl, // Add the image URL to the group structure
+        imageUrl: groupImageUrl, // Add the group image URL to the group structure
       );
       Provider.of<GroupProvider>(context, listen: false).addGroup(newGroup);
 
@@ -133,8 +157,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                     }
                     return null;
                   },
-                  onSaved: (value) =>
-                      _groupName = value!, // Save the group name
+                  onSaved: (value) => _groupName = value!, // Save the group name
                 ),
 
                 const SizedBox(height: 20),
@@ -157,10 +180,9 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
                 const SizedBox(height: 10),
 
+                // Button to pick group image
                 SecondaryButton(
-                  onPressed: () {
-                    // Implement image picking logic if needed
-                  },
+                  onPressed: () => _pickImage(type: 'group'),
                   text: 'Pick Group Image',
                   icon: Icons.photo_library,
                 ),

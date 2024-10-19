@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:campfire/home/home_pages/calls_page.dart';
 import 'package:campfire/home/home_pages/chats_page.dart';
 import 'package:campfire/home/home_pages/feed_page.dart';
@@ -14,15 +15,21 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  String? userId;
 
-  // List of pages to navigate to
-  final List<Widget> _pages = [
-    FeedPage(),
-    const GroupsPage(),
-    const ChatsPage(),
-    CallsPage(),
-    const ProfilePage(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchCurrentUserId();
+  }
+
+  Future<void> _fetchCurrentUserId() async {
+    // Fetch the current logged-in user's ID using Firebase Authentication
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    setState(() {
+      userId = currentUser?.uid;
+    });
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -32,6 +39,19 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (userId == null) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    // Initialize the pages with the required userId for CallsPage
+    final List<Widget> _pages = [
+      FeedPage(),
+      const GroupsPage(),
+      const ChatsPage(),
+      CallsPage(userId: userId!), // Pass the dynamic userId to CallsPage
+      const ProfilePage(),
+    ];
+
     return Scaffold(
       // Body using IndexedStack to maintain state
       body: IndexedStack(

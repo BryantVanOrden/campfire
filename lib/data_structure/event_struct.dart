@@ -1,11 +1,12 @@
 class Event {
   String eventId;
-  String? imageLink; // Nullable image link stored in Firebase
+  String? imageLink;
   String creatorUid;
-  String? groupId; // Nullable group ID
+  String? groupId;
   bool isPublic;
-  DateTime? dateTime; // Nullable time and date
-  String? location;  // Nullable location
+  DateTime? dateTime;
+  String? location;
+  int likeCount; // New field to store the number of likes
 
   Event({
     required this.eventId,
@@ -15,6 +16,7 @@ class Event {
     required this.isPublic,
     this.dateTime,
     this.location,
+    this.likeCount = 0, // Default to 0 likes initially
   });
 
   Map<String, dynamic> toJson() {
@@ -26,6 +28,8 @@ class Event {
       'isPublic': isPublic,
       'dateTime': dateTime?.toIso8601String(),
       'location': location,
+      'likeCount':
+          likeCount, // Include the like count in the Firestore document
     };
   }
 
@@ -36,8 +40,11 @@ class Event {
       creatorUid: json['creatorUid'],
       groupId: json['groupId'],
       isPublic: json['isPublic'],
-      dateTime: json['dateTime'] != null ? DateTime.parse(json['dateTime']) : null,
+      dateTime:
+          json['dateTime'] != null ? DateTime.parse(json['dateTime']) : null,
       location: json['location'],
+      likeCount:
+          json['likeCount'] ?? 0, // Default to 0 if no likeCount field exists
     );
   }
 }

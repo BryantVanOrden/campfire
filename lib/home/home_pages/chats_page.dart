@@ -64,8 +64,8 @@ class _ChatsPageState extends State<ChatsPage> {
     setState(() {
       searchQuery = query;
       filteredUsers = users.where((userDoc) {
-        String email = userDoc['email'] ?? '';
-        return email.toLowerCase().contains(query.toLowerCase());
+        String name = userDoc['displayName'] ?? '';
+        return name.toLowerCase().contains(query.toLowerCase());
       }).toList();
     });
   }
@@ -81,8 +81,7 @@ class _ChatsPageState extends State<ChatsPage> {
         builder: (context) => CoupleChatPage(
           otherUserId: userData['uid'],
 
-          otherUserName:
-              userData['email'] ?? 'Unknown', // Using email for displayName
+          otherUserName: userData['displayName'] ?? 'Unknown',
           otherUserPhotoUrl: otherUserPhotoUrl, // Using profileImageLink
         ),
       ),
@@ -114,7 +113,7 @@ class _ChatsPageState extends State<ChatsPage> {
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               decoration: const InputDecoration(
-                labelText: 'Search by Email',
+                labelText: 'Search by Username',
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
               ),
@@ -133,7 +132,7 @@ class _ChatsPageState extends State<ChatsPage> {
                         leading: CircleAvatar(
                           backgroundImage: _getUserImage(userDoc),
                         ),
-                        title: Text(userDoc['email'] ?? 'Unknown'),
+                        title: Text(userDoc['displayName'] ?? 'Unknown'),
                         onTap: () => _openChat(userDoc),
                       );
                     },

@@ -1,13 +1,17 @@
 import 'package:latlong2/latlong.dart'; // Import LatLng for location
+import 'package:flutter_webrtc/flutter_webrtc.dart'; // For RTCIceCandidate
 
 class User {
   String uid;
   String email;
-  List<String>? interests; // Nullable list of interests
-  List<String>? groupIds; // Nullable list of group IDs
-  String? profileImageLink; // Nullable link to profile image stored in Firebase
+  List<String>? interests;
+  List<String>? groupIds;
+  String? profileImageLink;
   DateTime dateOfBirth;
-  LatLng location; // LatLng object for location
+  LatLng location;
+  String? callOffer; // Nullable string to store SDP offer
+  String? callAnswer; // Nullable string to store SDP answer
+  List<RTCIceCandidate>? iceCandidates; // Store RTCIceCandidates directly
 
   User({
     required this.uid,
@@ -17,8 +21,12 @@ class User {
     this.profileImageLink,
     required this.dateOfBirth,
     required this.location,
+    this.callOffer,
+    this.callAnswer,
+    this.iceCandidates,
   });
 
+  // Convert the User object to JSON (e.g., for Firestore storage)
   Map<String, dynamic> toJson() {
     return {
       'uid': uid,
@@ -31,9 +39,20 @@ class User {
         'latitude': location.latitude,
         'longitude': location.longitude,
       },
+      'callOffer': callOffer,
+      'callAnswer': callAnswer,
+      // Convert iceCandidates to a List of Maps to store in Firestore
+      'iceCandidates': iceCandidates
+          ?.map((candidate) => {
+                'candidate': candidate.candidate,
+                'sdpMid': candidate.sdpMid,
+                'sdpMLineIndex': candidate.sdpMLineIndex,
+              })
+          .toList(),
     };
   }
 
+  // Convert JSON data to a User object
   static User fromJson(Map<String, dynamic> json) {
     return User(
       uid: json['uid'],
@@ -46,6 +65,18 @@ class User {
         json['location']['latitude'],
         json['location']['longitude'],
       ),
+      callOffer: json['callOffer'],
+      callAnswer: json['callAnswer'],
+      // Convert the JSON iceCandidates list back into a list of RTCIceCandidate objects
+      iceCandidates: json['iceCandidates'] != null
+          ? (json['iceCandidates'] as List)
+              .map((c) => RTCIceCandidate(
+                    c['candidate'],
+                    c['sdpMid'],
+                    c['sdpMLineIndex'],
+                  ))
+              .toList()
+          : null,
     );
   }
 }

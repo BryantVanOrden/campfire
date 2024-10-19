@@ -40,15 +40,9 @@ class _LoginPageState extends State<LoginPage> {
         password: _passwordController.text.trim(),
       );
       // If login is successful, navigate to the home page or show success message
-      Navigator.pushReplacementNamed(context, '/home');
     } on FirebaseAuthException catch (e) {
       setState(() {
         _errorMessage = 'Incorrect credentials. Please try again.';
-      });
-    } catch (e) {
-      // Catch any other exceptions
-      setState(() {
-        _errorMessage = 'An unexpected error occurred. Please try again.';
       });
     }
   }
@@ -139,7 +133,7 @@ class _LoginPageState extends State<LoginPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _login,
-                  child: const Text('Login'),
+                  child: const Text('Log in'),
                 ),
               ),
               if (_errorMessage.isNotEmpty)
