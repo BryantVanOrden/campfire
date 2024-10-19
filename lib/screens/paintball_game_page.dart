@@ -21,10 +21,12 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
 
   late DatabaseReference gameRef;
 
-  String? myShipPosition;
-  String? opponentShipPosition;
-  String? lastMoveBy;
+  String? myPosition;
+  String? opponentGuess;
   String? winner;
+
+  int myHearts = 3;
+  int opponentHearts = 3;
 
   bool isMyTurn = false;
   bool isGameOver = false;
@@ -37,15 +39,19 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
   }
 
   void _initializeGame() async {
-    DatabaseEvent event = await gameRef.once(); // Get the event
-    DataSnapshot snapshot =
-        event.snapshot; // Get the DataSnapshot from the event
+    DatabaseEvent event = await gameRef.once();
+    DataSnapshot snapshot = event.snapshot;
+
     if (snapshot.value == null) {
       // Initialize game state
-      gameRef.set({
+      await gameRef.set({
         'player1': widget.currentUserId,
         'player2': widget.otherUserId,
         'currentTurn': widget.currentUserId,
+        'hearts': {
+          widget.currentUserId: 3,
+          widget.otherUserId: 3,
+        },
         'moves': {},
         'winner': null,
       });
@@ -60,33 +66,73 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
       } else {
         setState(() {
           isMyTurn = gameData['currentTurn'] == widget.currentUserId;
+          myHearts = gameData['hearts'][widget.currentUserId];
+          opponentHearts = gameData['hearts'][widget.otherUserId];
         });
       }
     }
 
     // Listen for game updates
     gameRef.onValue.listen((event) {
-      Map<dynamic, dynamic> gameData =
-          event.snapshot.value as Map<dynamic, dynamic>;
-      setState(() {
-        isMyTurn = gameData['currentTurn'] == widget.currentUserId;
-        winner = gameData['winner'];
-        isGameOver = winner != null;
-      });
+      if (event.snapshot.value != null) {
+        Map<dynamic, dynamic> gameData =
+            event.snapshot.value as Map<dynamic, dynamic>;
+        setState(() {
+          isMyTurn = gameData['currentTurn'] == widget.currentUserId;
+          myHearts = gameData['hearts'][widget.currentUserId];
+          opponentHearts = gameData['hearts'][widget.otherUserId];
+          winner = gameData['winner'];
+          isGameOver = winner != null;
+        });
+      }
     });
   }
 
-  void _makeMove(String position) {
-    if (!isMyTurn || isGameOver) return;
+  void _makeMove(String shootPosition) {
+    if (!isMyTurn || isGameOver || myPosition == null) return;
 
-    gameRef.child('moves').child(position).set(widget.currentUserId);
+    gameRef.child('moves').push().set({
+      'shooter': widget.currentUserId,
+      'shootPosition': shootPosition,
+      'hiddenPosition': myPosition,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+
     gameRef.update({
       'currentTurn': widget.otherUserId,
     });
 
-    // Check if this move hits the opponent's ship
-    // For simplicity, we'll assume each player has a random ship position at the start
-    // In a real game, you would let players choose their ship positions
+    // Check if this move hits the opponent
+    _checkForHit(shootPosition);
+  }
+
+  void _checkForHit(String shootPosition) {
+    gameRef.once().then((DatabaseEvent event) {
+      if (event.snapshot.value != null) {
+        Map<dynamic, dynamic> gameData =
+            event.snapshot.value as Map<dynamic, dynamic>;
+        String opponentHidden = gameData['hiddenPosition'] ?? '';
+
+        // Check if the player hit the opponent's hidden position
+        if (opponentHidden == shootPosition) {
+          _updateHearts(widget.otherUserId);
+        }
+      }
+    });
+  }
+
+  void _updateHearts(String playerId) {
+    int hearts = (playerId == widget.currentUserId) ? myHearts - 1 : opponentHearts - 1;
+
+    gameRef.child('hearts').update({
+      playerId: hearts,
+    });
+
+    if (hearts == 0) {
+      gameRef.update({
+        'winner': playerId == widget.currentUserId ? widget.otherUserId : widget.currentUserId,
+      });
+    }
   }
 
   @override
@@ -109,6 +155,8 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
                     style: TextStyle(fontSize: 20),
                   ),
                   SizedBox(height: 20),
+                  _buildHearts(),
+                  SizedBox(height: 20),
                   _buildGameGrid(),
                 ],
               ),
@@ -116,33 +164,87 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
     );
   }
 
-  Widget _buildGameGrid() {
-    List<Widget> rows = [];
-    for (int row = 0; row < 5; row++) {
-      List<Widget> cells = [];
-      for (int col = 0; col < 5; col++) {
-        String position = '$row$col';
-        cells.add(
-          GestureDetector(
-            onTap: () => _makeMove(position),
-            child: Container(
-              width: 60,
-              height: 60,
-              margin: EdgeInsets.all(2),
-              color: Colors.grey[300],
-              child: Center(child: Text('')),
-            ),
-          ),
-        );
-      }
-      rows.add(Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: cells,
-      ));
-    }
-    return Column(
+  Widget _buildHearts() {
+    return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: rows,
+      children: [
+        Text('Lives: ❤️ x $myHearts              '),
+        Text('Opponent: ❤️ x $opponentHearts'),
+      ],
+    );
+  }
+
+  Widget _buildGameGrid() {
+    return Column(
+      children: [
+        Text('Your Bushes (Hide behind one):'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildHideButton('Left'),
+            _buildHideButton('Center'),
+            _buildHideButton('Right'),
+          ],
+        ),
+        SizedBox(height: 20),
+        Text('Shoot at Opponent\'s Bushes:'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildShootButton('Left'),
+            _buildShootButton('Center'),
+            _buildShootButton('Right'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHideButton(String position) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          myPosition = position;
+        });
+      },
+      child: Container(
+        margin: EdgeInsets.all(8.0),
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          color: myPosition == position ? Colors.green : Colors.grey,
+          border: Border.all(color: Colors.black, width: 2),
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: Center(
+          child: Text(
+            position,
+            style: TextStyle(fontSize: 18, color: Colors.white),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShootButton(String position) {
+    return GestureDetector(
+      onTap: () => _makeMove(position),
+      child: Container(
+        margin: EdgeInsets.all(8.0),
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          color: Colors.red,
+          border: Border.all(color: Colors.black, width: 2),
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: Center(
+          child: Text(
+            position,
+            style: TextStyle(fontSize: 18, color: Colors.white),
+          ),
+        ),
+      ),
     );
   }
 }
