@@ -1,4 +1,3 @@
-// lib/home/home_pages/feed_page.dart
 import 'package:campfire/shared_widets/create_event_page.dart';
 import 'package:campfire/widgets/event_card.dart';
 import 'package:campfire/theme/app_colors.dart';
@@ -15,14 +14,20 @@ class FeedPage extends StatefulWidget {
 }
 
 class _FeedPageState extends State<FeedPage> {
+  // Function to handle refreshing
+  Future<void> _refreshFeed(FeedProvider feedProvider) async {
+    await feedProvider
+        .refreshEvents(); // Assuming you have a method to refresh events in FeedProvider
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Feed'),
+        title: const Text('Feed'),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
             onPressed: () {
               Navigator.push(
                 context,
@@ -35,22 +40,25 @@ class _FeedPageState extends State<FeedPage> {
       body: Consumer<FeedProvider>(
         builder: (context, feedProvider, child) {
           if (feedProvider.isLoading) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (feedProvider.events.isEmpty) {
-            return Center(child: Text('No events to show.'));
+            return const Center(child: Text('No events to show.'));
           }
 
-          return ListView.builder(
-            itemCount: feedProvider.events.length,
-            itemBuilder: (context, index) {
-              var event = feedProvider.events[index];
-              return EventCard(
-                event: event,
-                userGroupIds: feedProvider.userGroupIds,
-              );
-            },
+          return RefreshIndicator(
+            onRefresh: () => _refreshFeed(feedProvider),
+            child: ListView.builder(
+              itemCount: feedProvider.events.length,
+              itemBuilder: (context, index) {
+                var event = feedProvider.events[index];
+                return EventCard(
+                  event: event,
+                  userGroupIds: feedProvider.userGroupIds,
+                );
+              },
+            ),
           );
         },
       ),

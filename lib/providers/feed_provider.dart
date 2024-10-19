@@ -1,4 +1,3 @@
-// lib/providers/feed_provider.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,7 +22,8 @@ class FeedProvider with ChangeNotifier {
   Future<void> _loadUserGroupIds() async {
     User? user = _auth.currentUser;
     if (user != null) {
-      DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+      DocumentSnapshot userDoc =
+          await _firestore.collection('users').doc(user.uid).get();
       if (userDoc.exists && userDoc.data() != null) {
         _userGroupIds = List<String>.from(userDoc['groupIds'] ?? []);
         notifyListeners();
@@ -37,5 +37,21 @@ class FeedProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     });
+  }
+
+  // Method to manually refresh the events (used in pull-to-refresh)
+  Future<void> refreshEvents() async {
+    _isLoading = true; // Show loading indicator
+    notifyListeners();
+
+    try {
+      QuerySnapshot snapshot = await _firestore.collection('events').get();
+      _events = snapshot.docs;
+    } catch (e) {
+      print('Error refreshing events: $e');
+    }
+
+    _isLoading = false; // Hide loading indicator
+    notifyListeners();
   }
 }
