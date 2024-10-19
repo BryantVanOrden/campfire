@@ -21,7 +21,7 @@ class GamesPage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => TicTacToeGamePage(
+                  builder: (context) => const TicTacToeGamePage(
                     chatId: 'unique_chat_id',
                     currentUserId: 'current_user_id',
                     otherUserId: 'other_user_id',
@@ -37,7 +37,7 @@ class GamesPage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => PaintballGamePage(
+                  builder: (context) => const PaintballGamePage(
                     chatId: 'unique_chat_id',
                     currentUserId: 'current_user_id',
                     otherUserId: 'other_user_id',
@@ -53,7 +53,7 @@ class GamesPage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CheckersGamePage(
+                  builder: (context) => const CheckersGamePage(
                     chatId: 'unique_chat_id',
                     currentUserId: 'current_user_id',
                     otherUserId: 'other_user_id',
