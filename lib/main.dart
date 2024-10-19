@@ -1,9 +1,11 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:campfire/firebase_options.dart';
 import 'package:campfire/home/home.dart';
 import 'package:campfire/signup_signin/login.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'providers/group_provider.dart';
 
 
 void main() async {
@@ -16,15 +18,24 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Campfire App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<GroupProvider>(
+          create: (_) => GroupProvider(),
+        ),
+        // You can add more providers here if needed
+      ],
+      child: MaterialApp(
+        title: 'Campfire App',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: AuthenticationWrapper(),
       ),
-      home: AuthenticationWrapper(),
     );
   }
 }
+
 
 class AuthenticationWrapper extends StatelessWidget {
   @override
