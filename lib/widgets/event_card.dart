@@ -33,7 +33,8 @@ class EventCard extends StatelessWidget {
         ? (eventData['likeCount'] as int? ?? 0)
         : 0;
 
-    bool isPublic = event['isPublic'] ?? false;
+    bool isPublic = event['isPublic'] ?? true; // Default to true if isPublic is null
+
     bool canShowEvent =
         isPublic || (groupId != null && userGroupIds.contains(groupId));
 

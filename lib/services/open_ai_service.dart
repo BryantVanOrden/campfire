@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class OpenAIService {
-  final String _apiKey = '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'; // Remember to keep your API key secure
+  final String apiKey =
+      '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'; // Keep your API key secure
 
   Future<List<String>> getSortedEventIds({
     required Map<String, dynamic> user,
@@ -12,26 +13,29 @@ class OpenAIService {
 
     final headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer $_apiKey',
+      'Authorization': 'Bearer $apiKey',
     };
 
     final body = jsonEncode({
-      "model": "gpt-4",
+      "model": "gpt-4o-mini",
       "messages": [
         {
           "role": "system",
-          "content": "You are an assistant that helps users find events based on their interests."
+          "content":
+              "You are an assistant that helps users find events based on their interests."
         },
-        {
-          "role": "user",
-          "content": _generatePrompt(user, events)
-        }
+        {"role": "user", "content": _generatePrompt(user, events)}
       ],
       "max_tokens": 200,
       "temperature": 0.7,
     });
 
+    print('OpenAI Request Body: $body');
+
     final response = await http.post(url, headers: headers, body: body);
+
+    print('OpenAI Response Status: ${response.statusCode}');
+    print('OpenAI Response Body: ${response.body}');
 
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
@@ -43,7 +47,8 @@ class OpenAIService {
     }
   }
 
-  String _generatePrompt(Map<String, dynamic> user, List<Map<String, dynamic>> events) {
+  String _generatePrompt(
+      Map<String, dynamic> user, List<Map<String, dynamic>> events) {
     String userInterests = (user['interests'] as List<dynamic>).join('", "');
     String prompt = '''
 User Interests: "$userInterests"
@@ -61,20 +66,19 @@ Event ${i + 1}:
     }
 
     prompt += '''
-Please return nothing but a JSON array of the event IDs in the order of most relevant to least relevant based on the user's interests. Do not include any other information in the response. Not even an explanation. Do not start with "based on the users..." or anything like that. Just the JSON array. Thank you. Just go straight into the json array. Otherwise it will break my api.
+Please return a JSON array of the event IDs in order from most relevant to least relevant based on the user's interests. Return only the JSON array without any additional text or explanation. And do not use markdown syntax. Use raw text.
 ''';
-
 
     return prompt;
   }
 
   List<String> _extractEventIds(String textResponse) {
     try {
-      // Parse the textResponse as JSON
       List<dynamic> eventIds = jsonDecode(textResponse);
       return eventIds.cast<String>();
     } catch (e) {
       print('Error parsing response: $e');
+      print('Response was: $textResponse');
       throw Exception('Failed to parse event IDs from OpenAI response');
     }
   }

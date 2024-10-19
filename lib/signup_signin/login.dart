@@ -1,3 +1,4 @@
+import 'package:campfire/home/home.dart';
 import 'package:campfire/signup_signin/signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -19,33 +20,29 @@ class _LoginPageState extends State<LoginPage> {
 
   String _errorMessage = '';
 
-  Future<void> _login() async {
-    setState(() {
-      _errorMessage = ''; // Clear error message before login attempt
-    });
+Future<void> _login() async {
+  setState(() {
+    _errorMessage = ''; // Clear error message before login attempt
+  });
 
-    if (_emailController.text.trim().isEmpty) {
-      _errorMessage = "Email is required.";
-      return;
-    }
-
-    if (_passwordController.text.trim().isEmpty) {
-      _errorMessage = "Password is required.";
-      return;
-    }
-
+  if (_formKey.currentState!.validate()) {
     try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      await _auth.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      // If login is successful, navigate to the home page or show success message
+
+      // No need to navigate manually here
+      // The AuthenticationWrapper will detect the auth state change
+      // and navigate accordingly
     } on FirebaseAuthException catch (e) {
       setState(() {
         _errorMessage = 'Incorrect credentials. Please try again.';
       });
     }
   }
+}
+
 
   // Future<void> _login() async {
   //   if (_formKey.currentState!.validate()) {
