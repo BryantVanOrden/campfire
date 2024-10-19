@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class FeedPage extends StatefulWidget {
+  const FeedPage({super.key});
+
   @override
   _FeedPageState createState() => _FeedPageState();
 }
@@ -37,30 +39,30 @@ class _FeedPageState extends State<FeedPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Feed'),
+        title: const Text('Feed'),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CreateEventPage()),
+                MaterialPageRoute(builder: (context) => const CreateEventPage()),
               );
             },
           ),
         ],
       ),
       body: userGroupIds == null || userGroupIds!.isEmpty
-          ? Center(child: CircularProgressIndicator()) // Wait until groupIds are loaded
+          ? const Center(child: CircularProgressIndicator()) // Wait until groupIds are loaded
           : StreamBuilder(
               stream: _firestore.collection('events').snapshots(),
               builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(child: Text('No events to show.'));
+                  return const Center(child: Text('No events to show.'));
                 }
 
                 List<DocumentSnapshot> events = snapshot.data!.docs;
@@ -74,7 +76,7 @@ class _FeedPageState extends State<FeedPage> {
 
                     bool canShowEvent = isPublic || (groupId != null && userGroupIds!.contains(groupId));
 
-                    if (!canShowEvent) return SizedBox.shrink(); // Skip if user can't see this event
+                    if (!canShowEvent) return const SizedBox.shrink(); // Skip if user can't see this event
 
                     return EventTile(event: event);
                   },
@@ -88,7 +90,7 @@ class _FeedPageState extends State<FeedPage> {
 class EventTile extends StatelessWidget {
   final DocumentSnapshot event;
 
-  const EventTile({required this.event});
+  const EventTile({super.key, required this.event});
 
   @override
   Widget build(BuildContext context) {
@@ -118,24 +120,24 @@ class EventTile extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) => GroupChatPage(
-                  groupId: groupId!,
+                  groupId: groupId,
                   groupName: groupName,
                 ),
               ),
             );
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Group not found')),
+              const SnackBar(content: Text('Group not found')),
             );
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Group ID is missing')),
+            const SnackBar(content: Text('Group ID is missing')),
           );
         }
       },
       child: Card(
-        margin: EdgeInsets.all(8),
+        margin: const EdgeInsets.all(8),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(
@@ -153,10 +155,10 @@ class EventTile extends StatelessWidget {
                   width: 100,
                   height: 100,
                   color: Colors.grey,
-                  child: Icon(Icons.event),
+                  child: const Icon(Icons.event),
                 ),
 
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
 
               // Event Details
               Expanded(
@@ -167,7 +169,7 @@ class EventTile extends StatelessWidget {
                     Text(
                       eventName,
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
 
                     // Event Description
@@ -204,7 +206,7 @@ class EventTile extends StatelessWidget {
                               snapshot.data?.exists == true) {
                             return Text('Group: ${snapshot.data!['name']}');
                           }
-                          return SizedBox.shrink(); // Don't show anything while loading
+                          return const SizedBox.shrink(); // Don't show anything while loading
                         },
                       ),
                   ],

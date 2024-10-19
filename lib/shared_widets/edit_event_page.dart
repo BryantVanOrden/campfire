@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 class EditEventPage extends StatefulWidget {
   final DocumentSnapshot event;
 
-  EditEventPage({required this.event});
+  const EditEventPage({super.key, required this.event});
 
   @override
   _EditEventPageState createState() => _EditEventPageState();
@@ -38,7 +38,7 @@ class _EditEventPageState extends State<EditEventPage> {
   Future<void> _updateEvent() async {
     if (_eventNameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Event name cannot be empty')),
+        const SnackBar(content: Text('Event name cannot be empty')),
       );
       return;
     }
@@ -122,7 +122,7 @@ class _EditEventPageState extends State<EditEventPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Event'),
+        title: const Text('Edit Event'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -131,22 +131,22 @@ class _EditEventPageState extends State<EditEventPage> {
             // Event Name
             TextFormField(
               controller: _eventNameController,
-              decoration: InputDecoration(labelText: 'Event Name'),
+              decoration: const InputDecoration(labelText: 'Event Name'),
             ),
             // Event Description
             TextFormField(
               controller: _eventDescriptionController,
-              decoration: InputDecoration(labelText: 'Event Description'),
+              decoration: const InputDecoration(labelText: 'Event Description'),
               maxLines: 3,
             ),
             // Location
             TextFormField(
               controller: _locationController,
-              decoration: InputDecoration(labelText: 'Location'),
+              decoration: const InputDecoration(labelText: 'Location'),
             ),
             // Public or Group Event Toggle
             SwitchListTile(
-              title: Text('Is this a public event?'),
+              title: const Text('Is this a public event?'),
               value: isPublicEvent,
               onChanged: (value) {
                 setState(() {
@@ -157,7 +157,7 @@ class _EditEventPageState extends State<EditEventPage> {
             // Date and Time Picker
             ElevatedButton.icon(
               onPressed: _selectDateTime,
-              icon: Icon(Icons.calendar_today),
+              icon: const Icon(Icons.calendar_today),
               label: Text(eventDateTime == null
                   ? 'Pick Date & Time'
                   : 'Date: ${eventDateTime?.toLocal().toString().split(' ')[0]}'),
@@ -165,13 +165,13 @@ class _EditEventPageState extends State<EditEventPage> {
             // Update Button
             ElevatedButton(
               onPressed: _updateEvent,
-              child: Text('Update Event'),
+              child: const Text('Update Event'),
             ),
             // Delete Button
             ElevatedButton(
               onPressed: _deleteEvent,
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: Text('Delete Event'),
+              child: const Text('Delete Event'),
             ),
           ],
         ),

@@ -6,6 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class CreateEventPage extends StatefulWidget {
+  const CreateEventPage({super.key});
+
   @override
   _CreateEventPageState createState() => _CreateEventPageState();
 }
@@ -129,7 +131,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
   void _createEvent() async {
     if (_eventNameController.text.isEmpty || selectedGroup == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill all required fields')),
+        const SnackBar(content: Text('Please fill all required fields')),
       );
       return;
     }
@@ -180,7 +182,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Create New Event'),
+        title: const Text('Create New Event'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -190,7 +192,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
             // Group Dropdown
             if (userGroups.isNotEmpty)
               DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Select Group'),
+                decoration: const InputDecoration(labelText: 'Select Group'),
                 items: userGroups.map((group) {
                   return DropdownMenuItem(
                     value: group['id'],
@@ -207,23 +209,23 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 value: selectedGroupId,
               )
             else
-              Text('No groups available for this user'),
+              const Text('No groups available for this user'),
 
             // Event Name
             TextFormField(
               controller: _eventNameController,
-              decoration: InputDecoration(labelText: 'Event Name'),
+              decoration: const InputDecoration(labelText: 'Event Name'),
             ),
 
             // Event Description
             TextFormField(
               controller: _eventDescriptionController,
-              decoration: InputDecoration(labelText: 'Event Description'),
+              decoration: const InputDecoration(labelText: 'Event Description'),
               maxLines: 3,
             ),
 
             // Event Image Picker
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             if (eventImage != null)
               Image.file(
                 eventImage!,
@@ -236,20 +238,20 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 width: double.infinity,
                 height: 200,
                 color: Colors.grey[300],
-                child: Icon(Icons.image, size: 100),
+                child: const Icon(Icons.image, size: 100),
               ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             ElevatedButton.icon(
               onPressed: _pickEventImage,
-              icon: Icon(Icons.photo_library),
-              label: Text('Pick Event Image'),
+              icon: const Icon(Icons.photo_library),
+              label: const Text('Pick Event Image'),
             ),
 
             // Date Time Picker
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: _selectDateTime,
-              icon: Icon(Icons.calendar_today),
+              icon: const Icon(Icons.calendar_today),
               label: Text(eventDateTime == null
                   ? 'Pick Date & Time'
                   : 'Date: ${eventDateTime?.toLocal()}'),
@@ -258,12 +260,12 @@ class _CreateEventPageState extends State<CreateEventPage> {
             // Location
             TextFormField(
               controller: _locationController,
-              decoration: InputDecoration(labelText: 'Event Location'),
+              decoration: const InputDecoration(labelText: 'Event Location'),
             ),
 
             // Public or Group Event Toggle
             SwitchListTile(
-              title: Text('Is this a public event?'),
+              title: const Text('Is this a public event?'),
               value: isPublicEvent,
               onChanged: (value) {
                 setState(() {
@@ -273,10 +275,10 @@ class _CreateEventPageState extends State<CreateEventPage> {
             ),
 
             // Create Event Button
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _createEvent,
-              child: Text('Create Event'),
+              child: const Text('Create Event'),
             ),
           ],
         ),

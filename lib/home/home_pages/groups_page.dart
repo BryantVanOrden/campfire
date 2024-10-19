@@ -7,6 +7,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GroupsPage extends StatefulWidget {
+  const GroupsPage({super.key});
+
   @override
   _GroupsPageState createState() => _GroupsPageState();
 }
@@ -56,13 +58,13 @@ class _GroupsPageState extends State<GroupsPage>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Groups'),
+        title: const Text('Groups'),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.black, 
           labelColor: Colors.black, 
           unselectedLabelColor: Colors.grey, 
-          tabs: [
+          tabs: const [
             Tab(text: 'My Groups'),
             Tab(text: 'Public Groups'),
           ],
@@ -73,7 +75,7 @@ class _GroupsPageState extends State<GroupsPage>
         children: [
           // My Groups Tab
           myGroups.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text(
                     'No groups available. Join or create one!',
                     style: TextStyle(fontSize: 18),
@@ -89,7 +91,7 @@ class _GroupsPageState extends State<GroupsPage>
 
           // Public Groups Tab
           publicGroups.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text(
                     'No public groups available.',
                     style: TextStyle(fontSize: 18),
@@ -109,11 +111,11 @@ class _GroupsPageState extends State<GroupsPage>
           // Navigate to CreateGroupPage
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => CreateGroupPage()),
+            MaterialPageRoute(builder: (context) => const CreateGroupPage()),
           );
         },
-        child: Icon(Icons.add),
         tooltip: 'Create Group',
+        child: const Icon(Icons.add),
       ),
     );
   }

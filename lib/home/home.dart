@@ -6,6 +6,8 @@ import 'package:campfire/home/home_pages/profile_page.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -15,11 +17,11 @@ class _HomePageState extends State<HomePage> {
 
   // List of pages to navigate to
   final List<Widget> _pages = [
-    FeedPage(),
-    GroupsPage(),
-    ChatsPage(),
-    CallsPage(),
-    ProfilePage(),
+    const FeedPage(),
+    const GroupsPage(),
+    const ChatsPage(),
+    const CallsPage(),
+    const ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -31,10 +33,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // App Bar
-      appBar: AppBar(
-        title: Text('Campfire'),
-      ),
       // Body using IndexedStack to maintain state
       body: IndexedStack(
         index: _selectedIndex,
