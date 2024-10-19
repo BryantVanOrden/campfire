@@ -40,11 +40,13 @@ class _ProfilePageState extends State<ProfilePage> {
           .where('moderators', arrayContains: user!.uid)
           .get();
 
-      setState(() {
-        // Store the group IDs where the user is a moderator
-        moderatorGroupIds =
-            groupSnapshot.docs.map((doc) => doc.id).toList();
-      });
+      // Check if the widget is still mounted before calling setState
+      if (mounted) {
+        setState(() {
+          // Store the group IDs where the user is a moderator
+          moderatorGroupIds = groupSnapshot.docs.map((doc) => doc.id).toList();
+        });
+      }
     }
   }
 
@@ -133,9 +135,8 @@ class _ProfilePageState extends State<ProfilePage> {
         .snapshots();
   }
 
-
   @override
-    Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
