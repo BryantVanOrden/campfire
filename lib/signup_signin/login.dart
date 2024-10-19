@@ -51,6 +51,8 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Sign Up Successful')),
         );
+        // After successful sign-up, send the user to the home page
+        Navigator.pushReplacementNamed(context, '/home');
       } on FirebaseAuthException catch (e) {
         print("Sign Up Error: $e");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -73,6 +75,9 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
           SnackBar(content: Text('Login Successful')),
         );
         // Navigate to the next screen or home page after successful login
+        
+        // After successful login, navigate to the home page
+        Navigator.pushReplacementNamed(context, '/home');
       } on FirebaseAuthException catch (e) {
         print("Login Error: $e");
         ScaffoldMessenger.of(context).showSnackBar(
