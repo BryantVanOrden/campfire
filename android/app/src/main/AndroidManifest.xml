@@ -3,6 +3,8 @@
         android:label="campfire"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="AIzaSyB9X5I7ronC7e-5z69U421MV8fp0YbEAKU"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
