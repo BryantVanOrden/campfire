@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'dart:async';
 
 class PaintballGamePage extends StatefulWidget {
   final String chatId;
   final String currentUserId;
   final String otherUserId;
 
-  const PaintballGamePage({super.key, 
+  const PaintballGamePage({
+    Key? key,
     required this.chatId,
     required this.currentUserId,
     required this.otherUserId,
-  });
+  }) : super(key: key);
 
   @override
   _PaintballGamePageState createState() => _PaintballGamePageState();
@@ -18,11 +20,12 @@ class PaintballGamePage extends StatefulWidget {
 
 class _PaintballGamePageState extends State<PaintballGamePage> {
   final FirebaseDatabase _database = FirebaseDatabase.instance;
-
   late DatabaseReference gameRef;
 
   String? myPosition;
-  String? opponentGuess;
+  String? myShootPosition;
+  String? opponentPosition;
+  String? opponentShootPosition;
   String? winner;
 
   int myHearts = 3;
@@ -30,6 +33,7 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
 
   bool isMyTurn = false;
   bool isGameOver = false;
+  Timer? resetTimer; // Timer for automatic reset
 
   @override
   void initState() {
@@ -43,7 +47,6 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
     DataSnapshot snapshot = event.snapshot;
 
     if (snapshot.value == null) {
-      // Initialize game state
       await gameRef.set({
         'player1': widget.currentUserId,
         'player2': widget.otherUserId,
@@ -62,6 +65,7 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
         setState(() {
           winner = gameData['winner'];
           isGameOver = true;
+          _startResetTimer(); // Start the auto-reset timer
         });
       } else {
         setState(() {
@@ -83,9 +87,44 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
           opponentHearts = gameData['hearts'][widget.otherUserId];
           winner = gameData['winner'];
           isGameOver = winner != null;
+          if (isGameOver) _startResetTimer();
         });
       }
     });
+  }
+
+  // Start a 20-second timer to reset the game
+  void _startResetTimer() {
+    resetTimer = Timer(const Duration(seconds: 20), () {
+      _resetGame();
+    });
+  }
+
+  // Reset game state after the game ends
+  void _resetGame() {
+    gameRef.set({
+      'player1': widget.currentUserId,
+      'player2': widget.otherUserId,
+      'currentTurn': widget.currentUserId,
+      'hearts': {
+        widget.currentUserId: 3,
+        widget.otherUserId: 3,
+      },
+      'moves': {},
+      'winner': null,
+    });
+
+    setState(() {
+      isGameOver = false;
+      winner = null;
+      myHearts = 3;
+      opponentHearts = 3;
+      isMyTurn = true;
+    });
+
+    if (resetTimer != null) {
+      resetTimer!.cancel();
+    }
   }
 
   void _makeMove(String shootPosition) {
@@ -102,29 +141,80 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
       'currentTurn': widget.otherUserId,
     });
 
-    // Check if this move hits the opponent
-    _checkForHit(shootPosition);
-  }
-
-  void _checkForHit(String shootPosition) {
-    gameRef.once().then((DatabaseEvent event) {
-      if (event.snapshot.value != null) {
-        Map<dynamic, dynamic> gameData =
-            event.snapshot.value as Map<dynamic, dynamic>;
-        String opponentHidden = gameData['hiddenPosition'] ?? '';
-
-        // Check if the player hit the opponent's hidden position
-        if (opponentHidden == shootPosition) {
-          _updateHearts(widget.otherUserId);
-        }
-      }
+    setState(() {
+      myShootPosition = shootPosition;
     });
+
+    _checkForRoundOutcome();
   }
 
-  void _updateHearts(String playerId) {
+  void _checkForRoundOutcome() async {
+    DatabaseEvent event = await gameRef.once();
+    Map<dynamic, dynamic> gameData =
+        event.snapshot.value as Map<dynamic, dynamic>;
+
+    // Retrieve the last move from both players
+    final lastMoves = gameData['moves'] as Map<dynamic, dynamic>?;
+    if (lastMoves == null || lastMoves.length < 2) return;
+
+    final opponentMove = lastMoves.entries.firstWhere(
+        (entry) => entry.value['shooter'] != widget.currentUserId);
+
+    setState(() {
+      opponentPosition = opponentMove.value['hiddenPosition'];
+      opponentShootPosition = opponentMove.value['shootPosition'];
+    });
+
+    bool iWasHit = opponentShootPosition == myPosition;
+    bool opponentWasHit = myShootPosition == opponentPosition;
+
+    if (iWasHit) {
+      _updateHearts(widget.currentUserId);
+    }
+    if (opponentWasHit) {
+      _updateHearts(widget.otherUserId);
+    }
+
+    // Show round summary
+    await _showRoundSummary(iWasHit, opponentWasHit);
+  }
+
+  Future<void> _showRoundSummary(bool iWasHit, bool opponentWasHit) async {
+    String message = '';
+    if (iWasHit && opponentWasHit) {
+      message = 'Both players were hit!';
+    } else if (iWasHit) {
+      message = 'You were hit!';
+    } else if (opponentWasHit) {
+      message = 'Your shot hit your opponent!';
+    } else {
+      message = 'Both players missed!';
+    }
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Round Summary'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+
+    // Check for game over
+    if (myHearts == 0 || opponentHearts == 0) {
+      _showGameOver();
+    }
+  }
+
+  void _updateHearts(String playerId) async {
     int hearts = (playerId == widget.currentUserId) ? myHearts - 1 : opponentHearts - 1;
 
-    gameRef.child('hearts').update({
+    await gameRef.child('hearts').update({
       playerId: hearts,
     });
 
@@ -135,6 +225,31 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
     }
   }
 
+  Future<void> _showGameOver() async {
+    String resultMessage = winner == widget.currentUserId ? 'You Won!' : 'You Lost!';
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Game Over'),
+        content: Text(resultMessage),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    resetTimer?.cancel(); // Cancel the reset timer when the widget is disposed
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -143,9 +258,19 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
       ),
       body: Center(
         child: isGameOver
-            ? Text(
-                winner == widget.currentUserId ? 'You Won!' : 'You Lost!',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    winner == widget.currentUserId ? 'You Won!' : 'You Lost!',
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _resetGame,
+                    child: const Text('Restart Game'),
+                  ),
+                ],
               )
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,

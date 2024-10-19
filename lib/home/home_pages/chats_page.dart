@@ -81,11 +81,24 @@ class _ChatsPageState extends State<ChatsPage> {
       MaterialPageRoute(
         builder: (context) => CoupleChatPage(
           otherUserId: userData['uid'],
-          otherUserName: userData['email'] ?? 'Unknown',
-          otherUserPhotoUrl: otherUserPhotoUrl,
+
+          otherUserName: userData['email'] ?? 'Unknown', // Using email for displayName
+          otherUserPhotoUrl: otherUserPhotoUrl, // Using profileImageLink
         ),
       ),
     );
+  }
+
+  // Helper function to get user profile image
+  ImageProvider _getUserImage(DocumentSnapshot userDoc) {
+    var data = userDoc.data() as Map<String, dynamic>;
+    String? profileImageLink = data['profileImageLink'];
+
+    if (profileImageLink != null && profileImageLink.isNotEmpty) {
+      return NetworkImage(profileImageLink);
+    } else {
+      return const AssetImage('assets/images/default_profile_pic.jpg');
+    }
   }
 
   @override

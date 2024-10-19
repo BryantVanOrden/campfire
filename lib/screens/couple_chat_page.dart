@@ -1,4 +1,4 @@
-import 'package:campfire/screens/paintball_game_page.dart';
+import 'package:campfire/screens/list_of_games_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -63,11 +63,7 @@ class _CoupleChatPageState extends State<CoupleChatPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PaintballGamePage(
-          chatId: chatId,
-          currentUserId: currentUserId,
-          otherUserId: widget.otherUserId,
-        ),
+        builder: (context) => GamesPage(),
       ),
     );
   }

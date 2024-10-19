@@ -7,7 +7,8 @@ class GroupChatPage extends StatefulWidget {
   final String groupId;
   final String groupName;
 
-  const GroupChatPage({super.key, required this.groupId, required this.groupName});
+  const GroupChatPage(
+      {super.key, required this.groupId, required this.groupName});
 
   @override
   _GroupChatPageState createState() => _GroupChatPageState();
@@ -202,8 +203,10 @@ class _GroupChatPageState extends State<GroupChatPage>
         subtitle: Text(text),
       );
     } else if (type == 'event') {
-      String? eventImageUrl =
-          messageData.containsKey('imageUrl') ? messageData['imageUrl'] : null;
+      // Updated to use 'imageLink' instead of 'imageUrl'
+      String? eventImageUrl = messageData.containsKey('imageLink')
+          ? messageData['imageLink']
+          : null;
       String? eventLocation =
           messageData.containsKey('location') ? messageData['location'] : null;
       DateTime? eventDateTime = messageData.containsKey('dateTime')
@@ -237,8 +240,8 @@ class _GroupChatPageState extends State<GroupChatPage>
                   children: [
                     Text(
                       text,
-                      style:
-                          const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     if (eventLocation != null)
                       Padding(

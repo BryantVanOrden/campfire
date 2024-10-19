@@ -61,9 +61,9 @@ class _GroupsPageState extends State<GroupsPage>
         title: const Text('Groups'),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.black, 
-          labelColor: Colors.black, 
-          unselectedLabelColor: Colors.grey, 
+          indicatorColor: Colors.black,
+          labelColor: Colors.black,
+          unselectedLabelColor: Colors.grey,
           tabs: const [
             Tab(text: 'My Groups'),
             Tab(text: 'Public Groups'),

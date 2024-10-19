@@ -17,7 +17,7 @@ class _HomePageState extends State<HomePage> {
 
   // List of pages to navigate to
   final List<Widget> _pages = [
-    const FeedPage(),
+    FeedPage(),
     const GroupsPage(),
     const ChatsPage(),
     CallsPage(),
