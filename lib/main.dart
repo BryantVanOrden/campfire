@@ -24,7 +24,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   final bool isDarkMode;
 
-  MyApp({required this.isDarkMode});
+  const MyApp({super.key, required this.isDarkMode});
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +44,10 @@ class MyApp extends StatelessWidget {
             theme: themeProvider.isDarkMode
                 ? AppTheme.darkTheme
                 : AppTheme.lightTheme, // Use dynamic theme based on preference
-            home: AuthenticationWrapper(),
+            home: const AuthenticationWrapper(),
             routes: {
-              '/home': (context) => HomePage(),
-              '/login': (context) => SignUpLoginPage(),
+              '/home': (context) => const HomePage(),
+              '/login': (context) => const SignUpLoginPage(),
             },
           );
         },
@@ -57,19 +57,21 @@ class MyApp extends StatelessWidget {
 }
 
 class AuthenticationWrapper extends StatelessWidget {
+  const AuthenticationWrapper({super.key});
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Scaffold(
+          return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         } else if (snapshot.hasData) {
-          return HomePage(); // If the user is logged in, show home page
+          return const HomePage(); // If the user is logged in, show home page
         } else {
-          return SignUpLoginPage(); // Otherwise, show login page
+          return const SignUpLoginPage(); // Otherwise, show login page
         }
       },
     );

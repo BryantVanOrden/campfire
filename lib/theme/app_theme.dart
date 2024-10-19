@@ -53,7 +53,7 @@ class AppTheme {
         elevation: 0,
         iconTheme: IconThemeData(color: AppColors.offWhite),
       ),
-      colorScheme: ColorScheme.dark().copyWith(
+      colorScheme: const ColorScheme.dark().copyWith(
         primary: AppColors.mediumGreen,
         secondary: AppColors.lightGreen,
       ),

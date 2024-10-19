@@ -6,7 +6,7 @@ class PaintballGamePage extends StatefulWidget {
   final String currentUserId;
   final String otherUserId;
 
-  PaintballGamePage({
+  const PaintballGamePage({super.key, 
     required this.chatId,
     required this.currentUserId,
     required this.otherUserId,
@@ -139,24 +139,24 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Paintball Game'),
+        title: const Text('Paintball Game'),
       ),
       body: Center(
         child: isGameOver
             ? Text(
                 winner == widget.currentUserId ? 'You Won!' : 'You Lost!',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               )
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     isMyTurn ? 'Your Turn' : 'Opponent\'s Turn',
-                    style: TextStyle(fontSize: 20),
+                    style: const TextStyle(fontSize: 20),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   _buildHearts(),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   _buildGameGrid(),
                 ],
               ),
@@ -177,7 +177,7 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
   Widget _buildGameGrid() {
     return Column(
       children: [
-        Text('Your Bushes (Hide behind one):'),
+        const Text('Your Bushes (Hide behind one):'),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -186,8 +186,8 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
             _buildHideButton('Right'),
           ],
         ),
-        SizedBox(height: 20),
-        Text('Shoot at Opponent\'s Bushes:'),
+        const SizedBox(height: 20),
+        const Text('Shoot at Opponent\'s Bushes:'),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -208,7 +208,7 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
         });
       },
       child: Container(
-        margin: EdgeInsets.all(8.0),
+        margin: const EdgeInsets.all(8.0),
         width: 80,
         height: 80,
         decoration: BoxDecoration(
@@ -219,7 +219,7 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
         child: Center(
           child: Text(
             position,
-            style: TextStyle(fontSize: 18, color: Colors.white),
+            style: const TextStyle(fontSize: 18, color: Colors.white),
           ),
         ),
       ),
@@ -230,7 +230,7 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
     return GestureDetector(
       onTap: () => _makeMove(position),
       child: Container(
-        margin: EdgeInsets.all(8.0),
+        margin: const EdgeInsets.all(8.0),
         width: 80,
         height: 80,
         decoration: BoxDecoration(
@@ -241,7 +241,7 @@ class _PaintballGamePageState extends State<PaintballGamePage> {
         child: Center(
           child: Text(
             position,
-            style: TextStyle(fontSize: 18, color: Colors.white),
+            style: const TextStyle(fontSize: 18, color: Colors.white),
           ),
         ),
       ),

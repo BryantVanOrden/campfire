@@ -7,7 +7,7 @@ class GroupChatPage extends StatefulWidget {
   final String groupId;
   final String groupName;
 
-  GroupChatPage({required this.groupId, required this.groupName});
+  const GroupChatPage({super.key, required this.groupId, required this.groupName});
 
   @override
   _GroupChatPageState createState() => _GroupChatPageState();
@@ -91,7 +91,7 @@ class _GroupChatPageState extends State<GroupChatPage>
           indicatorColor: Colors.black,
           labelColor: Colors.black,
           unselectedLabelColor: Colors.grey,
-          tabs: [
+          tabs: const [
             Tab(text: 'Members'),
             Tab(text: 'Public'),
           ],
@@ -99,7 +99,7 @@ class _GroupChatPageState extends State<GroupChatPage>
         actions: [
           if (isModerator)
             IconButton(
-              icon: Icon(Icons.settings),
+              icon: const Icon(Icons.settings),
               onPressed: () {
                 // Navigate to the group chat admin page
                 Navigator.push(
@@ -142,7 +142,7 @@ class _GroupChatPageState extends State<GroupChatPage>
                 .snapshots(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
-                return Center(child: CircularProgressIndicator());
+                return const Center(child: CircularProgressIndicator());
               }
               var messages = snapshot.data!.docs;
 
@@ -165,13 +165,13 @@ class _GroupChatPageState extends State<GroupChatPage>
               Expanded(
                 child: TextField(
                   controller: _messageController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: 'Enter your message...',
                   ),
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.send),
+                icon: const Icon(Icons.send),
                 onPressed: () => _sendMessage(chatType),
               ),
             ],
@@ -182,7 +182,7 @@ class _GroupChatPageState extends State<GroupChatPage>
   }
 
   Widget _buildRestrictedAccessMessage() {
-    return Center(
+    return const Center(
       child: Text('Members-only chat. Join the group to participate.'),
     );
   }
@@ -211,7 +211,7 @@ class _GroupChatPageState extends State<GroupChatPage>
           : null;
 
       return Card(
-        margin: EdgeInsets.all(8),
+        margin: const EdgeInsets.all(8),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(
@@ -228,9 +228,9 @@ class _GroupChatPageState extends State<GroupChatPage>
                   width: 100,
                   height: 100,
                   color: Colors.grey,
-                  child: Icon(Icons.event),
+                  child: const Icon(Icons.event),
                 ),
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,7 +238,7 @@ class _GroupChatPageState extends State<GroupChatPage>
                     Text(
                       text,
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     if (eventLocation != null)
                       Padding(
@@ -263,6 +263,6 @@ class _GroupChatPageState extends State<GroupChatPage>
         ),
       );
     }
-    return SizedBox.shrink();
+    return const SizedBox.shrink();
   }
 }

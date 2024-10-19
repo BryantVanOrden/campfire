@@ -6,7 +6,7 @@ class GroupChatAdminPage extends StatefulWidget {
   final String groupId;
   final String groupName;
 
-  GroupChatAdminPage({required this.groupId, required this.groupName});
+  const GroupChatAdminPage({super.key, required this.groupId, required this.groupName});
 
   @override
   _GroupChatAdminPageState createState() => _GroupChatAdminPageState();
@@ -101,13 +101,13 @@ class _GroupChatAdminPageState extends State<GroupChatAdminPage> {
       'moderators': FieldValue.arrayUnion([userId])
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User promoted to moderator')));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User promoted to moderator')));
   }
 
   Future<void> _deleteGroup() async {
     await FirebaseFirestore.instance.collection('groups').doc(widget.groupId).delete();
     Navigator.pop(context); // Go back to the previous page after deletion
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Group deleted')));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Group deleted')));
   }
 
   @override
@@ -121,10 +121,10 @@ class _GroupChatAdminPageState extends State<GroupChatAdminPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Public Users', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text('Public Users', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             ListView.builder(
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: publicUsers.length,
               itemBuilder: (context, index) {
                 var user = publicUsers[index];
@@ -135,23 +135,23 @@ class _GroupChatAdminPageState extends State<GroupChatAdminPage> {
                     children: [
                       ElevatedButton(
                         onPressed: () => _addUserToMembers(user.id),
-                        child: Text('Add to\nMembers'),
+                        child: const Text('Add to\nMembers'),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       ElevatedButton(
                         onPressed: () => _banUser(user.id),
-                        child: Text('Ban\nUser'),
+                        child: const Text('Ban\nUser'),
                       ),
                     ],
                   ),
                 );
               },
             ),
-            SizedBox(height: 20),
-            Text('Members', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            const Text('Members', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             ListView.builder(
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: members.length,
               itemBuilder: (context, index) {
                 var user = members[index];
@@ -162,23 +162,23 @@ class _GroupChatAdminPageState extends State<GroupChatAdminPage> {
                     children: [
                       ElevatedButton(
                         onPressed: () => _promoteToModerator(user.id),
-                        child: Text('Promote\n       to\nModerator'),
+                        child: const Text('Promote\n       to\nModerator'),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       ElevatedButton(
                         onPressed: () => _banUser(user.id),
-                        child: Text('Ban\nUser'),
+                        child: const Text('Ban\nUser'),
                       ),
                     ],
                   ),
                 );
               },
             ),
-            SizedBox(height: 20),
-            Text('Banned Users', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            const Text('Banned Users', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             ListView.builder(
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: bannedUsers.length,
               itemBuilder: (context, index) {
                 var userId = bannedUsers[index];
@@ -186,19 +186,19 @@ class _GroupChatAdminPageState extends State<GroupChatAdminPage> {
                   title: Text('User ID: $userId'),
                   trailing: ElevatedButton(
                     onPressed: () => _unbanUser(userId),
-                    child: Text('Unban\nUser'),
+                    child: const Text('Unban\nUser'),
                   ),
                 );
               },
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Center(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red, // Red color for delete button
                 ),
                 onPressed: _deleteGroup,
-                child: Text('Delete Group'),
+                child: const Text('Delete Group'),
               ),
             ),
           ],

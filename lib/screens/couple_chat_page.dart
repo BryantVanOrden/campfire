@@ -8,7 +8,7 @@ class CoupleChatPage extends StatefulWidget {
   final String otherUserName;
   final String? otherUserPhotoUrl;
 
-  CoupleChatPage({
+  const CoupleChatPage({super.key, 
     required this.otherUserId,
     required this.otherUserName,
     this.otherUserPhotoUrl,
@@ -77,8 +77,8 @@ class _CoupleChatPageState extends State<CoupleChatPage> {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        padding: EdgeInsets.all(10),
-        margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        padding: const EdgeInsets.all(10),
+        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         decoration: BoxDecoration(
           color: isMe ? Colors.blueAccent : Colors.grey[300],
           borderRadius: BorderRadius.circular(8),
@@ -102,9 +102,9 @@ class _CoupleChatPageState extends State<CoupleChatPage> {
             CircleAvatar(
               backgroundImage: widget.otherUserPhotoUrl != null && widget.otherUserPhotoUrl!.isNotEmpty
                   ? NetworkImage(widget.otherUserPhotoUrl!)
-                  : AssetImage('assets/images/default_profile_pic.jpg') as ImageProvider,
+                  : const AssetImage('assets/images/default_profile_pic.jpg') as ImageProvider,
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Text(widget.otherUserName),
           ],
         ),
@@ -135,7 +135,7 @@ class _CoupleChatPageState extends State<CoupleChatPage> {
                     },
                   );
                 } else {
-                  return Center(child: Text('No messages yet.'));
+                  return const Center(child: Text('No messages yet.'));
                 }
               },
             ),
@@ -147,14 +147,14 @@ class _CoupleChatPageState extends State<CoupleChatPage> {
               children: [
                 // Game Button
                 IconButton(
-                  icon: Icon(Icons.sports_esports),
+                  icon: const Icon(Icons.sports_esports),
                   onPressed: _openGame,
                 ),
                 // Text Input
                 Expanded(
                   child: TextField(
                     controller: _messageController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: 'Enter your message...',
                       border: OutlineInputBorder(),
                     ),
@@ -162,7 +162,7 @@ class _CoupleChatPageState extends State<CoupleChatPage> {
                 ),
                 // Send Button
                 IconButton(
-                  icon: Icon(Icons.send),
+                  icon: const Icon(Icons.send),
                   onPressed: _sendMessage,
                 ),
               ],
