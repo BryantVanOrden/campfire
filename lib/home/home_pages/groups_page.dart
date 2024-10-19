@@ -44,6 +44,10 @@ class _GroupsPageState extends State<GroupsPage>
     await groupProvider.fetchGroups(); // Fetch groups from Firestore
   }
 
+  Future<void> _refreshGroups() async {
+    await _fetchGroups(); // Reuse the existing fetchGroups method
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupProvider = Provider.of<GroupProvider>(context);
@@ -70,42 +74,52 @@ class _GroupsPageState extends State<GroupsPage>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          // My Groups Tab
-          myGroups.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No groups available. Join or create one!',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: myGroups.length,
-                  itemBuilder: (context, index) {
-                    final group = myGroups[index];
-                    return GroupCard(group: group);
-                  },
+      body: groupProvider.isLoading
+          ? const Center(
+              child:
+                  CircularProgressIndicator()) // Show loading spinner if data is being fetched
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                // My Groups Tab with RefreshIndicator
+                RefreshIndicator(
+                  onRefresh: _refreshGroups,
+                  child: myGroups.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'No groups available. Join or create one!',
+                            style: TextStyle(fontSize: 18),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: myGroups.length,
+                          itemBuilder: (context, index) {
+                            final group = myGroups[index];
+                            return GroupCard(group: group);
+                          },
+                        ),
                 ),
 
-          // Public Groups Tab
-          publicGroups.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No public groups available.',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: publicGroups.length,
-                  itemBuilder: (context, index) {
-                    final group = publicGroups[index];
-                    return GroupCard(group: group);
-                  },
+                // Public Groups Tab with RefreshIndicator
+                RefreshIndicator(
+                  onRefresh: _refreshGroups,
+                  child: publicGroups.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'No public groups available.',
+                            style: TextStyle(fontSize: 18),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: publicGroups.length,
+                          itemBuilder: (context, index) {
+                            final group = publicGroups[index];
+                            return GroupCard(group: group);
+                          },
+                        ),
                 ),
-        ],
-      ),
+              ],
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Navigate to CreateGroupPage
