@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'dart:async';
 
 class CallsPage extends StatefulWidget {
   final String userId;
@@ -20,6 +21,10 @@ class _CallsPageState extends State<CallsPage> {
   RTCVideoRenderer _localRenderer = RTCVideoRenderer();
   RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
   RTCPeerConnection? _peerConnection;
+  MediaStream? _localStream;
+  MediaStream? _remoteStream;
+  StreamSubscription<DocumentSnapshot>? _callSubscription;
+  StreamSubscription<QuerySnapshot>? _iceCandidateSubscription;
 
   @override
   void initState() {
@@ -36,12 +41,31 @@ class _CallsPageState extends State<CallsPage> {
     await _remoteRenderer.initialize();
   }
 
-  // Dispose renderers when done
+  // Dispose renderers and close connections when done
   @override
   void dispose() {
+    // Stop local stream tracks and dispose of the renderer
+    _localRenderer.srcObject?.getTracks().forEach((track) {
+      track.stop();
+    });
+    _localRenderer.srcObject = null;
     _localRenderer.dispose();
+
+    // Stop remote stream tracks and dispose of the renderer
+    _remoteRenderer.srcObject?.getTracks().forEach((track) {
+      track.stop();
+    });
+    _remoteRenderer.srcObject = null;
     _remoteRenderer.dispose();
-    _peerConnection?.dispose();
+
+    // Close peer connection
+    _peerConnection?.close();
+    _peerConnection = null;
+
+    // Cancel Firestore subscriptions
+    _callSubscription?.cancel();
+    _iceCandidateSubscription?.cancel();
+
     super.dispose();
   }
 
@@ -101,40 +125,59 @@ class _CallsPageState extends State<CallsPage> {
       return;
     }
 
+    String callId = widget.userId + '_' + receiverId;
+
     _peerConnection = await createPeerConnection({
       'iceServers': [
         {'urls': 'stun:stun.l.google.com:19302'} // Public STUN server
-      ]
+      ],
+      'sdpSemantics': 'unified-plan',
     });
 
-    // Get local media stream (camera/microphone)
+    // Monitor ICE connection state
+    _peerConnection?.onIceConnectionState = (RTCIceConnectionState state) {
+      print('ICE Connection State: $state');
+      if (state == RTCIceConnectionState.RTCIceConnectionStateCompleted ||
+          state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
+        print("ICE connection completed or disconnected");
+        // Handle reconnection logic or inform the user
+      }
+    };
+
+    // Get local media stream with adjusted constraints
     MediaStream localStream = await navigator.mediaDevices.getUserMedia({
       'audio': true,
-      'video': {'facingMode': 'user'},
+      'video': {
+        'mandatory': {
+          'minWidth': '640',
+          'minHeight': '480',
+          'maxWidth': '640',
+          'maxHeight': '480',
+          'minFrameRate': '15',
+          'maxFrameRate': '30',
+        },
+        'facingMode': 'user',
+      },
     });
 
-    // Display local video stream
     _localRenderer.srcObject = localStream;
 
-    // Add local stream tracks to peer connection
     localStream.getTracks().forEach((track) {
       _peerConnection?.addTrack(track, localStream);
     });
 
-    // Handle remote stream
     _peerConnection?.onTrack = (RTCTrackEvent event) {
-      if (event.streams.isNotEmpty) {
+      if (event.track.kind == 'video' && event.streams.isNotEmpty) {
         setState(() {
-          _remoteRenderer.srcObject = event.streams[0]; // Show remote video
+          _remoteRenderer.srcObject = event.streams.first;
         });
       }
     };
 
-    // Listen for ICE candidates and send them to Firestore
     _peerConnection?.onIceCandidate = (RTCIceCandidate candidate) {
       FirebaseFirestore.instance
           .collection('calls')
-          .doc(widget.userId)
+          .doc(callId)
           .collection('iceCandidates')
           .add({
         'candidate': candidate.candidate,
@@ -143,23 +186,17 @@ class _CallsPageState extends State<CallsPage> {
       });
     };
 
-    // Create SDP offer
     RTCSessionDescription offer = await _peerConnection!.createOffer();
     await _peerConnection!.setLocalDescription(offer);
 
-    // Store the offer in Firestore
-    await FirebaseFirestore.instance
-        .collection('calls')
-        .doc(widget.userId)
-        .set({
+    await FirebaseFirestore.instance.collection('calls').doc(callId).set({
       'offer': offer.sdp,
       'receiverId': receiverId,
     });
 
-    // Listen for an answer from the remote peer
-    FirebaseFirestore.instance
+    _callSubscription = FirebaseFirestore.instance
         .collection('calls')
-        .doc(widget.userId)
+        .doc(callId)
         .snapshots()
         .listen((snapshot) {
       var data = snapshot.data();
@@ -169,10 +206,9 @@ class _CallsPageState extends State<CallsPage> {
       }
     });
 
-    // Listen for ICE candidates from the receiver
-    FirebaseFirestore.instance
+    _iceCandidateSubscription = FirebaseFirestore.instance
         .collection('calls')
-        .doc(widget.userId)
+        .doc(callId)
         .collection('iceCandidates')
         .snapshots()
         .listen((snapshot) {
@@ -198,53 +234,59 @@ class _CallsPageState extends State<CallsPage> {
         .listen((snapshot) async {
       var data = snapshot.data();
       if (data != null && data['offer'] != null) {
+        String callId = widget.userId + '_' + data['receiverId'];
+
         _peerConnection = await createPeerConnection({
           'iceServers': [
             {'urls': 'stun:stun.l.google.com:19302'}
-          ]
+          ],
+          'sdpSemantics': 'unified-plan',
         });
 
-        // Get local media stream
         MediaStream localStream = await navigator.mediaDevices.getUserMedia({
           'audio': true,
-          'video': {'facingMode': 'user'},
+          'video': {
+            'mandatory': {
+              'minWidth': '640',
+              'minHeight': '480',
+              'maxWidth': '640',
+              'maxHeight': '480',
+              'minFrameRate': '15',
+              'maxFrameRate': '30',
+            },
+            'facingMode': 'user',
+          },
         });
 
-        // Display local video stream
         _localRenderer.srcObject = localStream;
 
-        // Add local stream tracks to peer connection
         localStream.getTracks().forEach((track) {
           _peerConnection?.addTrack(track, localStream);
         });
 
-        // Handle remote stream
         _peerConnection?.onTrack = (RTCTrackEvent event) {
-          if (event.streams.isNotEmpty) {
+          if (event.track.kind == 'video' && event.streams.isNotEmpty) {
             setState(() {
-              _remoteRenderer.srcObject = event.streams[0]; // Show remote video
+              _remoteRenderer.srcObject = event.streams.first;
             });
           }
         };
 
-        // Set remote SDP offer
         await _peerConnection!.setRemoteDescription(
             RTCSessionDescription(data['offer'], 'offer'));
 
-        // Create SDP answer and send to Firestore
         RTCSessionDescription answer = await _peerConnection!.createAnswer();
         await _peerConnection!.setLocalDescription(answer);
         await FirebaseFirestore.instance
             .collection('calls')
-            .doc(widget.userId)
+            .doc(callId)
             .update({
           'answer': answer.sdp,
         });
 
-        // Listen for ICE candidates
-        FirebaseFirestore.instance
+        _iceCandidateSubscription = FirebaseFirestore.instance
             .collection('calls')
-            .doc(widget.userId)
+            .doc(callId)
             .collection('iceCandidates')
             .snapshots()
             .listen((snapshot) {
