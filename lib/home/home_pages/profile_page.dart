@@ -150,45 +150,54 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: () => _showFullScreenProfilePicture(context),
-              child: CircleAvatar(
-                radius: 50,
-                backgroundImage: user?.photoURL != null
-                    ? NetworkImage(user!.photoURL!)
-                    : const AssetImage('assets/images/default_profile_pic.jpg')
-                        as ImageProvider,
+        child: Center(
+          // Wrap in Center to center the content
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20), // Optional padding
+              GestureDetector(
+                onTap: () => _showFullScreenProfilePicture(context),
+                child: CircleAvatar(
+                  radius: 50,
+                  backgroundImage: user?.photoURL != null
+                      ? NetworkImage(user!.photoURL!)
+                      : const AssetImage(
+                              'assets/images/default_profile_pic.jpg')
+                          as ImageProvider,
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              user?.email ?? 'No Email',
-              style: const TextStyle(fontSize: 20),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => _logout(context),
-              child: const Text('Logout'),
-            ),
-            const SizedBox(height: 30),
-            const Text(
-              'Moderated Group Events',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            StreamBuilder<QuerySnapshot>(
-              stream: _getModeratorGroupEvents(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                var events = snapshot.data!.docs;
-                if (events.isEmpty) {
-                  return const Text('No events available.');
-                }
+              const SizedBox(height: 20),
+              Text(
+                user?.displayName ?? 'No Name',
+                style: const TextStyle(fontSize: 22),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                user?.email ?? 'No Email',
+                style: const TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => _logout(context),
+                child: const Text('Logout'),
+              ),
+              const SizedBox(height: 30),
+              const Text(
+                'Moderated Group Events',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              StreamBuilder<QuerySnapshot>(
+                stream: _getModeratorGroupEvents(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  var events = snapshot.data!.docs;
+                  if (events.isEmpty) {
+                    return const Text('No events available.');
+                  }
 
                   return ListView.builder(
                     shrinkWrap: true,
