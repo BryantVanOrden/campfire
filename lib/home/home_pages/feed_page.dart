@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class FeedPage extends StatefulWidget {
+  const FeedPage({super.key});
+
   @override
   _FeedPageState createState() => _FeedPageState();
 }
@@ -38,30 +40,30 @@ class _FeedPageState extends State<FeedPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Feed'),
+        title: const Text('Feed'),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CreateEventPage()),
+                MaterialPageRoute(builder: (context) => const CreateEventPage()),
               );
             },
           ),
         ],
       ),
       body: userGroupIds == null || userGroupIds!.isEmpty
-          ? Center(child: CircularProgressIndicator()) // Wait until groupIds are loaded
+          ? const Center(child: CircularProgressIndicator()) // Wait until groupIds are loaded
           : StreamBuilder(
               stream: _firestore.collection('events').snapshots(),
               builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(child: Text('No events to show.'));
+                  return const Center(child: Text('No events to show.'));
                 }
 
                 List<DocumentSnapshot> events = snapshot.data!.docs;
@@ -75,7 +77,7 @@ class _FeedPageState extends State<FeedPage> {
 
                     bool canShowEvent = isPublic || (groupId != null && userGroupIds!.contains(groupId));
 
-                    if (!canShowEvent) return SizedBox.shrink(); // Skip if user can't see this event
+                    if (!canShowEvent) return const SizedBox.shrink(); // Skip if user can't see this event
 
                     return EventTile(event: event);
                   },
@@ -89,7 +91,7 @@ class _FeedPageState extends State<FeedPage> {
 class EventTile extends StatelessWidget {
   final DocumentSnapshot event;
 
-  const EventTile({required this.event});
+  const EventTile({super.key, required this.event});
 
   @override
   Widget build(BuildContext context) {
@@ -123,16 +125,17 @@ class EventTile extends StatelessWidget {
             );
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Group not found')),
+              const SnackBar(content: Text('Group not found')),
             );
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Group ID is missing')),
+            const SnackBar(content: Text('Group ID is missing')),
           );
         }
       },
       child: Card(
+
         margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         elevation: 4,
         shape: RoundedRectangleBorder(
@@ -149,10 +152,30 @@ class EventTile extends StatelessWidget {
                   topRight: Radius.circular(16),
                 ),
                 child: Image.network(
+
+        margin: const EdgeInsets.all(8),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              // Event Image
+              if (eventImageUrl != null)
+                Image.network(
+
                   eventImageUrl,
                   width: double.infinity,
                   height: 200,
                   fit: BoxFit.cover,
+
+
+                )
+              else
+                Container(
+                  width: 100,
+                  height: 100,
+                  color: Colors.grey,
+                  child: const Icon(Icons.event),
+
                 ),
               )
             else
@@ -174,6 +197,7 @@ class EventTile extends StatelessWidget {
                 ),
               ),
 
+
             // Event Details
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -187,6 +211,20 @@ class EventTile extends StatelessWidget {
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: AppColors.darkGreen,
+
+              const SizedBox(width: 16),
+
+              // Event Details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Event Name
+                    Text(
+                      eventName,
+                      style:
+                          const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+
                     ),
                   ),
 
@@ -201,6 +239,7 @@ class EventTile extends StatelessWidget {
                       color: AppColors.darkGreen,
                     ),
                   ),
+
 
                   // Variable spacing before the location
                   SizedBox(height: 12),
@@ -263,6 +302,39 @@ class EventTile extends StatelessWidget {
                       },
                     ),
                 ],
+
+                    // Location (if available)
+                    if (location != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text('Location: $location'),
+                      ),
+
+                    // Date and Time (if available)
+                    if (dateTime != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                            'Date: ${dateTime.toLocal().toString().split(' ')[0]}'),
+                      ),
+
+                    // Group Name (if available)
+                    if (groupId != null)
+                      FutureBuilder<DocumentSnapshot>(
+                        future: FirebaseFirestore.instance
+                            .collection('groups')
+                            .doc(groupId)
+                            .get(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.done &&
+                              snapshot.data?.exists == true) {
+                            return Text('Group: ${snapshot.data!['name']}');
+                          }
+                          return const SizedBox.shrink(); // Don't show anything while loading
+                        },
+                      ),
+                  ],
+                ),
               ),
             ),
           ],

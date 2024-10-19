@@ -10,7 +10,7 @@ import 'dart:io';
 class EditEventPage extends StatefulWidget {
   final DocumentSnapshot event;
 
-  EditEventPage({required this.event});
+  const EditEventPage({super.key, required this.event});
 
   @override
   _EditEventPageState createState() => _EditEventPageState();
@@ -44,7 +44,7 @@ class _EditEventPageState extends State<EditEventPage> {
   Future<void> _updateEvent() async {
     if (_eventNameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Event name cannot be empty')),
+        const SnackBar(content: Text('Event name cannot be empty')),
       );
       return;
     }
@@ -128,7 +128,7 @@ class _EditEventPageState extends State<EditEventPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Event'),
+        title: const Text('Edit Event'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -138,16 +138,24 @@ class _EditEventPageState extends State<EditEventPage> {
             // Event Name
             CustomTextFormField(
               controller: _eventNameController,
+
               labelText: 'Event Name', // Add labelText for the input
               hintText: 'Camping with the boys',
+
+              decoration: const InputDecoration(labelText: 'Event Name'),
+
             ),
 
             // Event Description (with multiple lines)
             CustomTextFormField(
               controller: _eventDescriptionController,
+
               labelText: 'Event Description',
               hintText: 'It’s gonna be lit!',
               keyboardType: TextInputType.multiline,
+
+              decoration: const InputDecoration(labelText: 'Event Description'),
+
               maxLines: 3,
             ),
 
@@ -191,13 +199,16 @@ class _EditEventPageState extends State<EditEventPage> {
             // Location Input
             CustomTextFormField(
               controller: _locationController,
+
               labelText: 'Location',
               hintText: 'The TETONS!!!!',
+
+              decoration: const InputDecoration(labelText: 'Location'),
             ),
 
             // Public Event Toggle
             SwitchListTile(
-              title: Text('Is this a public event?'),
+              title: const Text('Is this a public event?'),
               value: isPublicEvent,
               onChanged: (value) {
                 setState(() {
@@ -211,11 +222,24 @@ class _EditEventPageState extends State<EditEventPage> {
               activeTrackColor: AppColors.lightGreen,
             ),
 
+
             // Update Event Button
             SizedBox(height: 16),
             PrimaryButton(
               onPressed: _updateEvent,
               text: 'Update Event',
+            // Date and Time Picker
+            ElevatedButton.icon(
+              onPressed: _selectDateTime,
+              icon: const Icon(Icons.calendar_today),
+              label: Text(eventDateTime == null
+                  ? 'Pick Date & Time'
+                  : 'Date: ${eventDateTime?.toLocal().toString().split(' ')[0]}'),
+            ),
+            // Update Button
+            ElevatedButton(
+              onPressed: _updateEvent,
+              child: const Text('Update Event'),
             ),
 
             // Delete Event Button
@@ -226,6 +250,8 @@ class _EditEventPageState extends State<EditEventPage> {
                 backgroundColor: Colors.red, // Delete button color
               ),
               child: Text('Delete Event'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Delete Event'),
             ),
           ],
         ),

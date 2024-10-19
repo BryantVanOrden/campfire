@@ -2,10 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:campfire/theme/app_colors.dart';
-import 'package:campfire/theme/app_theme.dart';
-import 'package:latlong2/latlong.dart';
 
 class SignUpLoginPage extends StatefulWidget {
+  const SignUpLoginPage({super.key});
+
   @override
   _SignUpLoginPageState createState() => _SignUpLoginPageState();
 }
@@ -32,7 +32,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
       if (_pickedLocation == null) {
         print("Location not picked.");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Please pick a location.')),
+          const SnackBar(content: Text('Please pick a location.')),
         );
         return;
       }
@@ -63,7 +63,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
         print(
             "User registered and saved to Firestore: ${userCredential.user?.uid}");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Sign Up Successful')),
+          const SnackBar(content: Text('Sign Up Successful')),
         );
         // After successful sign-up, send the user to the home page
         // After successful sign-up, navigate to home page
@@ -89,7 +89,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
         );
         print("Login successful");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login Successful')),
+          const SnackBar(content: Text('Login Successful')),
         );
 
         // Navigate to the next screen or home page after successful login
@@ -115,7 +115,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
+            colorScheme: const ColorScheme.light(
               primary: AppColors.darkGreen, // Header background color
               onPrimary: Colors.white, // Header text color
               onSurface: Colors.black, // Body text color
@@ -141,7 +141,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sign Up/Login'),
+        title: const Text('Sign Up/Login'),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -170,7 +170,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                           color: _isLogin
                               ? AppColors.darkGreen
                               : Colors.transparent,
-                          borderRadius: BorderRadius.only(
+                          borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(12),
                             bottomLeft: Radius.circular(12),
                           ),
@@ -200,7 +200,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                           color: !_isLogin
                               ? AppColors.darkGreen
                               : Colors.transparent,
-                          borderRadius: BorderRadius.only(
+                          borderRadius: const BorderRadius.only(
                             topRight: Radius.circular(12),
                             bottomRight: Radius.circular(12),
                           ),
@@ -222,11 +222,11 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                 ],
               ),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Form(
               key: _formKey,
               child: Container(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white, // Use a consistent background color
                   borderRadius: BorderRadius.circular(20),
@@ -235,7 +235,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                       color: AppColors.darkGreen.withOpacity(0.2),
                       spreadRadius: 2,
                       blurRadius: 8,
-                      offset: Offset(0, 4), // changes position of shadow
+                      offset: const Offset(0, 4), // changes position of shadow
                     ),
                   ],
                 ),
@@ -244,7 +244,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                     // Email Field
                     TextFormField(
                       controller: _emailController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Email',
                         prefixIcon:
                             Icon(Icons.email, color: AppColors.darkGreen),
@@ -262,14 +262,14 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     // Password Field
                     TextFormField(
                       controller: _passwordController,
                       decoration: InputDecoration(
                         labelText: 'Password',
                         prefixIcon:
-                            Icon(Icons.lock, color: AppColors.darkGreen),
+                            const Icon(Icons.lock, color: AppColors.darkGreen),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _passwordVisible
@@ -295,12 +295,12 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     if (!_isLogin) ...[
                       // Location Field
 
                       
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       // Date of Birth Picker
                       GestureDetector(
                         onTap: _selectDateOfBirth,
@@ -308,7 +308,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                           child: TextFormField(
                             decoration: InputDecoration(
                               labelText: 'Date of Birth',
-                              prefixIcon: Icon(Icons.calendar_today,
+                              prefixIcon: const Icon(Icons.calendar_today,
                                   color: AppColors.darkGreen),
                               hintText: _dateOfBirth == null
                                   ? 'Select Date of Birth'
@@ -324,7 +324,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                         ),
                       ),
                     ],
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     // Submit Button
                     SizedBox(
                       width: double.infinity,

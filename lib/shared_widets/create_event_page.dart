@@ -11,6 +11,8 @@ import 'dart:io';
 import '../shared_widets/primary_button.dart';
 
 class CreateEventPage extends StatefulWidget {
+  const CreateEventPage({super.key});
+
   @override
   _CreateEventPageState createState() => _CreateEventPageState();
 }
@@ -134,7 +136,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
   void _createEvent() async {
     if (_eventNameController.text.isEmpty || selectedGroup == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill all required fields')),
+        const SnackBar(content: Text('Please fill all required fields')),
       );
       return;
     }
@@ -185,7 +187,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Create New Event'),
+        title: const Text('Create New Event'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -194,11 +196,16 @@ class _CreateEventPageState extends State<CreateEventPage> {
           children: [
             // Group Dropdown
             if (userGroups.isNotEmpty)
+
               CustomDropdownFormField<String>(
                 labelText: 'Select Group', // Add labelText for the dropdown
                 hintText:
                     'Gym Bros', // This replaces labelText as the placeholder
                 value: selectedGroupId, // The currently selected group ID
+
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(labelText: 'Select Group'),
+
                 items: userGroups.map((group) {
                   return DropdownMenuItem(
                     value: group['id'],
@@ -216,13 +223,17 @@ class _CreateEventPageState extends State<CreateEventPage> {
                     vertical: 12), // Optional: Add margin if needed
               )
             else
-              Text('No groups available for this user'),
+              const Text('No groups available for this user'),
 
             // Event Name
             CustomTextFormField(
               controller: _eventNameController,
+
               labelText: 'Event Name', // Add labelText for the input
               hintText: 'Camping with the boys',
+
+              decoration: const InputDecoration(labelText: 'Event Name'),
+
             ),
 
             // Event Description
@@ -230,10 +241,13 @@ class _CreateEventPageState extends State<CreateEventPage> {
               controller: _eventDescriptionController,
               labelText: 'Event Description', // Add labelText for the input
               hintText: 'Its finna be lit bro',
+
+              decoration: const InputDecoration(labelText: 'Event Description'),
               maxLines: 3,
             ),
 
             // Event Image Picker
+
             SizedBox(height: 16),
             Container(
               decoration: BoxDecoration(
@@ -275,6 +289,36 @@ class _CreateEventPageState extends State<CreateEventPage> {
             SecondaryButton(
               onPressed: _selectDateTime,
               text: eventDateTime == null
+
+            const SizedBox(height: 16),
+            if (eventImage != null)
+              Image.file(
+                eventImage!,
+                width: double.infinity,
+                height: 200,
+                fit: BoxFit.cover,
+              )
+            else
+              Container(
+                width: double.infinity,
+                height: 200,
+                color: Colors.grey[300],
+                child: const Icon(Icons.image, size: 100),
+              ),
+            const SizedBox(height: 8),
+            ElevatedButton.icon(
+              onPressed: _pickEventImage,
+              icon: const Icon(Icons.photo_library),
+              label: const Text('Pick Event Image'),
+            ),
+
+            // Date Time Picker
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _selectDateTime,
+              icon: const Icon(Icons.calendar_today),
+              label: Text(eventDateTime == null
+
                   ? 'Pick Date & Time'
                   : 'Date: ${eventDateTime?.toLocal()}',
               icon: Icons.calendar_today,
@@ -283,12 +327,16 @@ class _CreateEventPageState extends State<CreateEventPage> {
             // Location
             CustomTextFormField(
               controller: _locationController,
+
               labelText: 'Location',
               hintText: 'The TETONS!!!!',
+
+              decoration: const InputDecoration(labelText: 'Event Location'),
+
             ),
 
             SwitchListTile(
-              title: Text('Is this a public event?'),
+              title: const Text('Is this a public event?'),
               value: isPublicEvent,
               onChanged: (value) {
                 setState(() {
@@ -308,10 +356,16 @@ class _CreateEventPageState extends State<CreateEventPage> {
             ),
 
             // Create Event Button
+
             SizedBox(height: 16),
             PrimaryButton(
               onPressed: _createEvent,
               text: 'Create Event',
+
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _createEvent,
+              child: const Text('Create Event'),
             ),
           ],
         ),

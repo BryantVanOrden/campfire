@@ -10,6 +10,8 @@ import 'package:uuid/uuid.dart';
 import 'dart:io';
 
 class CreateGroupPage extends StatefulWidget {
+  const CreateGroupPage({super.key});
+
   @override
   _CreateGroupPageState createState() => _CreateGroupPageState();
 }
@@ -39,7 +41,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
     if (_groupImage == null) return null;
 
     try {
-      String fileName = 'group_images/${Uuid().v4()}.jpg';
+      String fileName = 'group_images/${const Uuid().v4()}.jpg';
       UploadTask uploadTask = _storage.ref().child(fileName).putFile(_groupImage!);
       TaskSnapshot taskSnapshot = await uploadTask;
       return await taskSnapshot.ref.getDownloadURL();
@@ -57,13 +59,13 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
       String? imageUrl = await _uploadGroupImage();
 
       // Generate a new group ID
-      String groupId = Uuid().v4();
+      String groupId = const Uuid().v4();
 
       // Get the current user UID
       User? user = _auth.currentUser;
       if (user == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('User not logged in')),
+          const SnackBar(content: Text('User not logged in')),
         );
         return;
       }
@@ -108,10 +110,10 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Create a New Group'),
+        title: const Text('Create a New Group'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -120,7 +122,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
               children: [
                 // Group Name Input
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Group Name'),
+                  decoration: const InputDecoration(labelText: 'Group Name'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a group name';
@@ -130,7 +132,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                   onSaved: (value) => _groupName = value!,
                 ),
 
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 // Group Image Picker
                 if (_groupImage != null)
@@ -145,23 +147,23 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                     width: double.infinity,
                     height: 200,
                     color: Colors.grey[300],
-                    child: Icon(Icons.image, size: 100),
+                    child: const Icon(Icons.image, size: 100),
                   ),
 
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
 
                 ElevatedButton.icon(
                   onPressed: _pickGroupImage,
-                  icon: Icon(Icons.photo_library),
-                  label: Text('Pick Group Image'),
+                  icon: const Icon(Icons.photo_library),
+                  label: const Text('Pick Group Image'),
                 ),
 
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 // Create Group Button
                 ElevatedButton(
                   onPressed: _submit,
-                  child: Text('Create Group'),
+                  child: const Text('Create Group'),
                 ),
               ],
             ),

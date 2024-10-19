@@ -6,14 +6,16 @@ import 'create_group_page.dart';
 
 
 class GroupTestPage extends StatelessWidget {
+  const GroupTestPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     final groupProvider = Provider.of<GroupProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text('Group Test Page')),
+      appBar: AppBar(title: const Text('Group Test Page')),
       body: groupProvider.groups.isEmpty
-          ? Center(child: Text('No groups available. Create one!'))
+          ? const Center(child: Text('No groups available. Create one!'))
           : ListView.builder(
               itemCount: groupProvider.groups.length,
               itemBuilder: (context, index) {
@@ -25,10 +27,10 @@ class GroupTestPage extends StatelessWidget {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => CreateGroupPage()),
+            MaterialPageRoute(builder: (context) => const CreateGroupPage()),
           );
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }

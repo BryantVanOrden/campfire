@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ChatsPage extends StatefulWidget {
+  const ChatsPage({super.key});
+
   @override
   _ChatsPageState createState() => _ChatsPageState();
 }
@@ -98,7 +100,7 @@ class _ChatsPageState extends State<ChatsPage> {
     if (photoURL != null && photoURL.isNotEmpty) {
       return NetworkImage(photoURL);
     } else {
-      return AssetImage('assets/images/default_profile_pic.jpg');
+      return const AssetImage('assets/images/default_profile_pic.jpg');
     }
   }
 
@@ -106,7 +108,7 @@ class _ChatsPageState extends State<ChatsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chats'),
+        title: const Text('Chats'),
       ),
       body: Column(
         children: [
@@ -114,7 +116,7 @@ class _ChatsPageState extends State<ChatsPage> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                   labelText: 'Search by Email',
                   prefixIcon: Icon(Icons.search),
                   border: OutlineInputBorder()),
@@ -124,7 +126,7 @@ class _ChatsPageState extends State<ChatsPage> {
           // Users List
           Expanded(
             child: filteredUsers.isEmpty
-                ? Center(child: Text('No users found'))
+                ? const Center(child: Text('No users found'))
                 : ListView.builder(
                     itemCount: filteredUsers.length,
                     itemBuilder: (context, index) {

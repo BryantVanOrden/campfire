@@ -10,6 +10,8 @@ import 'package:provider/provider.dart';
 
 
 class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
+
   @override
   _ProfilePageState createState() => _ProfilePageState();
 }
@@ -64,14 +66,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text('Cancel'),
+                    child: const Text('Cancel'),
                   ),
                   TextButton(
                     onPressed: () {
                       Navigator.pop(context); // Close dialog
                       _pickNewProfilePicture(); // Open image picker
                     },
-                    child: Text('Pick New Picture'),
+                    child: const Text('Pick New Picture'),
                   ),
                 ],
               )
@@ -110,7 +112,7 @@ class _ProfilePageState extends State<ProfilePage> {
       return await taskSnapshot.ref.getDownloadURL(); // Get the image URL
     } catch (e) {
       print('Error uploading profile picture: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -123,7 +125,7 @@ class _ProfilePageState extends State<ProfilePage> {
   // Fetch all events from groups where the user is a moderator
   Stream<QuerySnapshot> _getModeratorGroupEvents() {
     if (moderatorGroupIds.isEmpty) {
-      return Stream.empty();
+      return const Stream.empty();
     }
     return _firestore
         .collection('events')
@@ -138,7 +140,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile Page'),
+        title: const Text('Profile Page'),
         actions: [
           IconButton(
             icon: Icon(
@@ -161,22 +163,22 @@ class _ProfilePageState extends State<ProfilePage> {
                 radius: 50,
                 backgroundImage: user?.photoURL != null
                     ? NetworkImage(user!.photoURL!)
-                    : AssetImage('assets/images/default_profile_pic.jpg')
+                    : const AssetImage('assets/images/default_profile_pic.jpg')
                         as ImageProvider,
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
               user?.email ?? 'No Email',
-              style: TextStyle(fontSize: 20),
+              style: const TextStyle(fontSize: 20),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => _logout(context),
-              child: Text('Logout'),
+              child: const Text('Logout'),
             ),
-            SizedBox(height: 30),
-            Text(
+            const SizedBox(height: 30),
+            const Text(
               'Moderated Group Events',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
@@ -184,16 +186,16 @@ class _ProfilePageState extends State<ProfilePage> {
               stream: _getModeratorGroupEvents(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
                 var events = snapshot.data!.docs;
                 if (events.isEmpty) {
-                  return Text('No events available.');
+                  return const Text('No events available.');
                 }
 
                 return ListView.builder(
                   shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: events.length,
                   itemBuilder: (context, index) {
                     var event = events[index];
