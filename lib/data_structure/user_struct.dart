@@ -2,7 +2,7 @@ class User {
   String uid;
   String email;
   List<String>? interests; // Nullable list of interests
-  List<String>? groupIds;  // Nullable list of group IDs
+  List<String>? groupIds; // Nullable list of group IDs
   String? profileImageLink; // Nullable link to profile image stored in Firebase
   DateTime dateOfBirth;
   String location;

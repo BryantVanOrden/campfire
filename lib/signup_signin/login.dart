@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:location_picker_flutter_map/location_picker_flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 class SignUpLoginPage extends StatefulWidget {
   @override
@@ -14,7 +16,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
   // Controllers for Sign Up and Login
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController();
+  String? _pickedLocation;
   DateTime? _dateOfBirth;
 
   bool _isLogin = true; // Toggle between login and sign-up
@@ -26,25 +28,38 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
   // Sign-Up Logic
   void _signUp() async {
     if (_formKey.currentState!.validate()) {
+      if (_pickedLocation == null) {
+        print("Location not picked.");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please pick a location.')),
+        );
+        return;
+      }
+
       try {
+        // Create user in Firebase Authentication
         UserCredential userCredential =
             await _auth.createUserWithEmailAndPassword(
           email: _emailController.text,
           password: _passwordController.text,
         );
 
-        // Create user in Firestore
+        // Check if the location and other data are set correctly
+        print(
+            "Saving user data: Email: ${_emailController.text}, Location: $_pickedLocation, DOB: $_dateOfBirth");
+
+        // Save user data to Firestore
         await _firestore.collection('users').doc(userCredential.user?.uid).set({
           'uid': userCredential.user?.uid,
           'email': _emailController.text,
-          'location': _locationController.text,
+          'location': _pickedLocation, // Save the formatted location string
           'dateOfBirth': _dateOfBirth?.toIso8601String(),
           'interests': [],
           'groupIds': [],
           'profileImageLink': null,
         });
 
-        // After successful sign-up, send the user to the home page
+        // After successful sign-up, navigate to home page
         Navigator.pushReplacementNamed(context, '/home');
       } on FirebaseAuthException catch (e) {
         print("Sign Up Error: $e");
@@ -55,6 +70,15 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
     }
   }
 
+  // Set picked location string when a location is picked
+  void _onLocationPicked(LatLong latLng) {
+    setState(() {
+      _pickedLocation = "${latLng.latitude}, ${latLng.longitude}";
+      print(
+          "Picked location: $_pickedLocation"); // Debugging output to check if location is picked correctly
+    });
+  }
+
   // Login Logic
   void _login() async {
     if (_formKey.currentState!.validate()) {
@@ -63,7 +87,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
           email: _emailController.text,
           password: _passwordController.text,
         );
-        
+
         // After successful login, navigate to the home page
         Navigator.pushReplacementNamed(context, '/home');
       } on FirebaseAuthException catch (e) {
@@ -206,16 +230,22 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                       },
                     ),
                     if (!_isLogin) ...[
-                      // Additional fields for Sign-Up
-                      TextFormField(
-                        controller: _locationController,
-                        decoration: InputDecoration(labelText: 'Location'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your location';
-                          }
-                          return null;
-                        },
+                      Text(
+                        _pickedLocation == null
+                            ? 'Please pick a location'
+                            : 'Location: $_pickedLocation',
+                      ),
+                      SizedBox(
+                        height: 300, // Set a fixed height for the map picker
+                        child: FlutterLocationPicker(
+                          initZoom: 11,
+                          minZoomLevel: 5,
+                          maxZoomLevel: 16,
+                          trackMyPosition: true,
+                          onPicked: (pickedData) {
+                            _onLocationPicked(pickedData.latLong as LatLong);
+                          },
+                        ),
                       ),
                       ElevatedButton(
                         onPressed: _selectDateOfBirth,
