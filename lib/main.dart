@@ -6,6 +6,8 @@ import 'package:campfire/signup_signin/login.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'providers/group_provider.dart';
+import 'package:campfire/theme/app_theme.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,9 +27,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Campfire App',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
+        theme: AppTheme.lightTheme, 
         home: AuthenticationWrapper(),
       ),
     );

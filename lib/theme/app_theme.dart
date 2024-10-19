@@ -7,22 +7,32 @@ class AppTheme {
       primaryColor: AppColors.darkGreen,
       colorScheme: ColorScheme.fromSwatch().copyWith(
         primary: AppColors.darkGreen,
-        secondary: AppColors
-            .yellow, // Use secondary for what was previously 'accentColor'
+        secondary: AppColors.mediumGreen,
       ),
-      scaffoldBackgroundColor: AppColors.lightGreen,
-      appBarTheme: AppBarTheme(
+      scaffoldBackgroundColor: AppColors.offWhite,
+      appBarTheme: const AppBarTheme(
         color: AppColors.darkGreen,
         titleTextStyle: TextStyle(
-          color: Colors.white,
-          fontSize: 20.0,
+          color: AppColors.offWhite,
+          fontSize: 18.0,
           fontWeight: FontWeight.bold,
         ),
-        iconTheme: IconThemeData(color: Colors.white),
+        centerTitle: true,
+        elevation: 0,
+        iconTheme: IconThemeData(color: AppColors.offWhite),
       ),
-      buttonTheme: ButtonThemeData(
-        buttonColor: AppColors.red,
-        textTheme: ButtonTextTheme.primary,
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        selectedItemColor: AppColors.darkGreen,
+        unselectedItemColor: AppColors.mediumGreen,
+        backgroundColor: Colors.white,
+        type: BottomNavigationBarType.fixed,
+      ),
+      textTheme: const TextTheme(
+        bodyMedium: TextStyle(
+          color: AppColors.darkGreen,
+          fontSize: 18.0,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }
