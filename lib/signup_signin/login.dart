@@ -3,8 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:campfire/theme/app_colors.dart';
 import 'package:campfire/theme/app_theme.dart';
-import 'package:location_picker_flutter_map/location_picker_flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:map_location_picker/map_location_picker.dart'; // Import for map_location_picker
+import 'package:google_maps_flutter/google_maps_flutter.dart'
+    as google; // Prefix google for Google Maps LatLng
+import 'package:latlong2/latlong.dart'
+    as latlong; // Prefix latlong for latlong2 LatLng
 
 class SignUpLoginPage extends StatefulWidget {
   @override
@@ -18,7 +21,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
   // Controllers for Sign Up and Login
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  String? _pickedLocation;
+  latlong.LatLng? _pickedLocation; // Use the latlong prefix here
   DateTime? _dateOfBirth;
 
   bool _isLogin = true; // Toggle between login and sign-up
@@ -46,31 +49,25 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
           password: _passwordController.text.trim(),
         );
 
-        // Check if the location and other data are set correctly
-        print(
-            "Saving user data: Email: ${_emailController.text}, Location: $_pickedLocation, DOB: $_dateOfBirth");
-
         // Save user data to Firestore
         await _firestore.collection('users').doc(userCredential.user?.uid).set({
           'uid': userCredential.user?.uid,
           'email': _emailController.text,
-          'location': _pickedLocation, // Save the formatted location string
+          'location':
+              "${_pickedLocation!.latitude}, ${_pickedLocation!.longitude}", // Save the formatted location string
           'dateOfBirth': _dateOfBirth?.toIso8601String(),
           'interests': [],
           'groupIds': [],
           'profileImageLink': null,
         });
 
-        print(
-            "User registered and saved to Firestore: ${userCredential.user?.uid}");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Sign Up Successful')),
         );
-        // After successful sign-up, send the user to the home page
-        // After successful sign-up, navigate to home page
+
+        // Navigate to home page after successful sign-up
         Navigator.pushReplacementNamed(context, '/home');
       } on FirebaseAuthException catch (e) {
-        print("Sign Up Error: $e");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Sign Up Failed: ${e.message}')),
         );
@@ -78,13 +75,18 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
     }
   }
 
-  // Set picked location string when a location is picked
-  void _onLocationPicked(LatLong latLng) {
-    setState(() {
-      _pickedLocation = "${latLng.latitude}, ${latLng.longitude}";
-      print(
-          "Picked location: $_pickedLocation"); // Debugging output to check if location is picked correctly
-    });
+  // Handle location picked from Google Maps
+  void _onLocationPicked(Geometry locationData) {
+    if (locationData != null) {
+      setState(() {
+        _pickedLocation = latlong.LatLng(
+          locationData.location.lat,
+          locationData.location.lng,
+        ); // Use latlong.LatLng here
+        print(
+            "Picked location: Latitude: ${_pickedLocation!.latitude}, Longitude: ${_pickedLocation!.longitude}");
+      });
+    }
   }
 
   // Login Logic
@@ -95,17 +97,13 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
-        print("Login successful");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Login Successful')),
         );
 
-        // Navigate to the next screen or home page after successful login
-
-        // After successful login, navigate to the home page
+        // Navigate to home page after successful login
         Navigator.pushReplacementNamed(context, '/home');
       } on FirebaseAuthException catch (e) {
-        print("Login Error: $e");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Login Failed: ${e.message}')),
         );
@@ -160,7 +158,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
             Container(
               height: 50,
               decoration: BoxDecoration(
-                color: Colors.white, // Use scaffold background color
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.darkGreen),
               ),
@@ -236,14 +234,14 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
               child: Container(
                 padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white, // Use a consistent background color
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.darkGreen.withOpacity(0.2),
                       spreadRadius: 2,
                       blurRadius: 8,
-                      offset: Offset(0, 4), // changes position of shadow
+                      offset: Offset(0, 4),
                     ),
                   ],
                 ),
@@ -262,7 +260,6 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                         if (value == null || value.trim().isEmpty) {
                           return 'Please enter your email';
                         }
-                        // Basic email format validation
                         if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
                             .hasMatch(value.trim())) {
                           return 'Please enter a valid email';
@@ -305,17 +302,16 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                     ),
                     SizedBox(height: 16),
                     if (!_isLogin) ...[
-                      // Location Field
-
+                      // Map Location Picker using map_location_picker
                       SizedBox(
-                        height: 300, // Set a fixed height for the map picker
-                        child: FlutterLocationPicker(
-                          initZoom: 11,
-                          minZoomLevel: 5,
-                          maxZoomLevel: 16,
-                          trackMyPosition: true,
-                          onPicked: (pickedData) {
-                            _onLocationPicked(pickedData.latLong as LatLong);
+                        height: 300,
+                        child: MapLocationPicker(
+                          apiKey: 'YOUR_GOOGLE_MAPS_API_KEY',
+                          popOnNextButtonTaped: true,
+                          onNext: (GeocodingResult? result) {
+                            if (result != null) {
+                              _onLocationPicked(result.geometry);
+                            }
                           },
                         ),
                       ),
