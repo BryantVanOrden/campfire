@@ -1,18 +1,11 @@
-import 'package:campfire/shared_widets/custom_dropdown_form_field.dart';
-import 'package:campfire/shared_widets/custom_text_form_field.dart';
-import 'package:campfire/shared_widets/secondary_button.dart';
-import 'package:campfire/theme/app_colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../shared_widets/primary_button.dart';
 
 class CreateEventPage extends StatefulWidget {
-  const CreateEventPage({super.key});
-
   @override
   _CreateEventPageState createState() => _CreateEventPageState();
 }
@@ -136,7 +129,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
   void _createEvent() async {
     if (_eventNameController.text.isEmpty || selectedGroup == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all required fields')),
+        SnackBar(content: Text('Please fill all required fields')),
       );
       return;
     }
@@ -187,7 +180,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create New Event'),
+        title: Text('Create New Event'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -196,20 +189,12 @@ class _CreateEventPageState extends State<CreateEventPage> {
           children: [
             // Group Dropdown
             if (userGroups.isNotEmpty)
-
-              CustomDropdownFormField<String>(
-                labelText: 'Select Group', // Add labelText for the dropdown
-                hintText:
-                    'Gym Bros', // This replaces labelText as the placeholder
-                value: selectedGroupId, // The currently selected group ID
-
               DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Select Group'),
-
+                decoration: InputDecoration(labelText: 'Select Group'),
                 items: userGroups.map((group) {
                   return DropdownMenuItem(
                     value: group['id'],
-                    child: Text(group['name']!), // Display the group name
+                    child: Text(group['name']!),
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -219,78 +204,26 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         .firstWhere((group) => group['id'] == value)['name'];
                   });
                 },
-                margin: EdgeInsets.symmetric(
-                    vertical: 12), // Optional: Add margin if needed
+                value: selectedGroupId,
               )
             else
-              const Text('No groups available for this user'),
+              Text('No groups available for this user'),
 
             // Event Name
-            CustomTextFormField(
+            TextFormField(
               controller: _eventNameController,
-
-              labelText: 'Event Name', // Add labelText for the input
-              hintText: 'Camping with the boys',
-
-              decoration: const InputDecoration(labelText: 'Event Name'),
-
+              decoration: InputDecoration(labelText: 'Event Name'),
             ),
 
             // Event Description
-            CustomTextFormField(
+            TextFormField(
               controller: _eventDescriptionController,
-              labelText: 'Event Description', // Add labelText for the input
-              hintText: 'Its finna be lit bro',
-
-              decoration: const InputDecoration(labelText: 'Event Description'),
+              decoration: InputDecoration(labelText: 'Event Description'),
               maxLines: 3,
             ),
 
             // Event Image Picker
-
             SizedBox(height: 16),
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: AppColors.lightGrey, 
-                  width: 1.5, 
-                ),
-                borderRadius: BorderRadius.circular(
-                    16), 
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(
-                    16),
-                child: eventImage != null
-                    ? Image.file(
-                        eventImage!,
-                        width: double.infinity,
-                        height: 200,
-                        fit: BoxFit.cover,
-                      )
-                    : Container(
-                        width: double.infinity,
-                        height: 200,
-                        color: Colors.grey[300],
-                        child: Icon(Icons.image, size: 100),
-                      ),
-              ),
-            ),
-
-            SizedBox(height: 8),
-            SecondaryButton(
-              onPressed: _pickEventImage,
-              text: 'Pick Event Image',
-              icon: Icons.photo_library,
-            ),
-
-            // Date Time Picker
-            SizedBox(height: 16),
-            SecondaryButton(
-              onPressed: _selectDateTime,
-              text: eventDateTime == null
-
-            const SizedBox(height: 16),
             if (eventImage != null)
               Image.file(
                 eventImage!,
@@ -303,69 +236,47 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 width: double.infinity,
                 height: 200,
                 color: Colors.grey[300],
-                child: const Icon(Icons.image, size: 100),
+                child: Icon(Icons.image, size: 100),
               ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             ElevatedButton.icon(
               onPressed: _pickEventImage,
-              icon: const Icon(Icons.photo_library),
-              label: const Text('Pick Event Image'),
+              icon: Icon(Icons.photo_library),
+              label: Text('Pick Event Image'),
             ),
 
             // Date Time Picker
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: _selectDateTime,
-              icon: const Icon(Icons.calendar_today),
+              icon: Icon(Icons.calendar_today),
               label: Text(eventDateTime == null
-
                   ? 'Pick Date & Time'
-                  : 'Date: ${eventDateTime?.toLocal()}',
-              icon: Icons.calendar_today,
+                  : 'Date: ${eventDateTime?.toLocal()}'),
             ),
 
             // Location
-            CustomTextFormField(
+            TextFormField(
               controller: _locationController,
-
-              labelText: 'Location',
-              hintText: 'The TETONS!!!!',
-
-              decoration: const InputDecoration(labelText: 'Event Location'),
-
+              decoration: InputDecoration(labelText: 'Event Location'),
             ),
 
+            // Public or Group Event Toggle
             SwitchListTile(
-              title: const Text('Is this a public event?'),
+              title: Text('Is this a public event?'),
               value: isPublicEvent,
               onChanged: (value) {
                 setState(() {
                   isPublicEvent = value;
                 });
               },
-              tileColor: Colors
-                  .grey.shade200,
-              inactiveTrackColor:
-                  Colors.grey.shade400, 
-              inactiveThumbColor:
-                  Colors.grey.shade600, 
-              activeColor:
-                  AppColors.mediumGreen, 
-              activeTrackColor:
-                  AppColors.lightGreen,
             ),
 
             // Create Event Button
-
             SizedBox(height: 16),
-            PrimaryButton(
-              onPressed: _createEvent,
-              text: 'Create Event',
-
-            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _createEvent,
-              child: const Text('Create Event'),
+              child: Text('Create Event'),
             ),
           ],
         ),
