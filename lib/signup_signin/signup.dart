@@ -86,6 +86,7 @@ class _SignUpPageState extends State<SignUpPage> {
           'dateOfBirth': _dateOfBirth?.toIso8601String(),
           'groupIds': [],
           'interests': [],
+          'photoURL': "",
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Sign Up Successful')),

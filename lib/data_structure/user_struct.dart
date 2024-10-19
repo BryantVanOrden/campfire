@@ -8,6 +8,7 @@ class User {
   List<String>? groupIds;
   String? profileImageLink;
   DateTime dateOfBirth;
+  String displayName;
   LatLng location;
   String? callOffer; // Nullable string to store SDP offer
   String? callAnswer; // Nullable string to store SDP answer
@@ -20,6 +21,7 @@ class User {
     this.groupIds,
     this.profileImageLink,
     required this.dateOfBirth,
+    required this.displayName,
     required this.location,
     this.callOffer,
     this.callAnswer,
@@ -39,6 +41,7 @@ class User {
         'latitude': location.latitude,
         'longitude': location.longitude,
       },
+      'displayName': displayName,
       'callOffer': callOffer,
       'callAnswer': callAnswer,
       // Convert iceCandidates to a List of Maps to store in Firestore
@@ -65,6 +68,7 @@ class User {
         json['location']['latitude'],
         json['location']['longitude'],
       ),
+      displayName: json["displayName"],
       callOffer: json['callOffer'],
       callAnswer: json['callAnswer'],
       // Convert the JSON iceCandidates list back into a list of RTCIceCandidate objects
