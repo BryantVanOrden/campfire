@@ -1,14 +1,16 @@
 import 'package:campfire/screens/group_chat_page.dart';
 import 'package:campfire/shared_widets/create_event_page.dart';
+import 'package:campfire/theme/app_colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class FeedPage extends StatefulWidget {
+  const FeedPage({Key? key}) : super(key: key);  // Mark constructor as const
+
   @override
   _FeedPageState createState() => _FeedPageState();
 }
-
 class _FeedPageState extends State<FeedPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -97,9 +99,6 @@ class EventTile extends StatelessWidget {
     String? eventImageUrl = event['imageLink'];
     String? location = event['location'];
     String? groupId = event['groupId'];
-    DateTime? dateTime = event['dateTime'] != null
-        ? (event['dateTime'] as Timestamp).toDate()
-        : null;
 
     return InkWell(
       onTap: () async {
@@ -118,7 +117,7 @@ class EventTile extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) => GroupChatPage(
-                  groupId: groupId!,
+                  groupId: groupId,
                   groupName: groupName,
                 ),
               ),
@@ -135,83 +134,139 @@ class EventTile extends StatelessWidget {
         }
       },
       child: Card(
-        margin: EdgeInsets.all(8),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              // Event Image
-              if (eventImageUrl != null)
-                Image.network(
-                  eventImageUrl,
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover,
-                )
-              else
-                Container(
-                  width: 100,
-                  height: 100,
-                  color: Colors.grey,
-                  child: Icon(Icons.event),
+        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16), // Rounded corners
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Event Image with rounded top corners
+            if (eventImageUrl != null)
+              ClipRRect(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
                 ),
-
-              SizedBox(width: 16),
-
-              // Event Details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Event Name
-                    Text(
-                      eventName,
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-
-                    // Event Description
-                    Text(
-                      eventDescription,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-
-                    // Location (if available)
-                    if (location != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text('Location: $location'),
-                      ),
-
-                    // Date and Time (if available)
-                    if (dateTime != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                            'Date: ${dateTime.toLocal().toString().split(' ')[0]}'),
-                      ),
-
-                    // Group Name (if available)
-                    if (groupId != null)
-                      FutureBuilder<DocumentSnapshot>(
-                        future: FirebaseFirestore.instance
-                            .collection('groups')
-                            .doc(groupId)
-                            .get(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.done &&
-                              snapshot.data?.exists == true) {
-                            return Text('Group: ${snapshot.data!['name']}');
-                          }
-                          return SizedBox.shrink(); // Don't show anything while loading
-                        },
-                      ),
-                  ],
+                child: Image.network(
+                  eventImageUrl,
+                  width: double.infinity,
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
+              )
+            else
+              // Placeholder image if eventImageUrl is null
+              ClipRRect(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+                child: Container(
+                  width: double.infinity,
+                  height: 200,
+                  color: Colors.grey.shade300,
+                  child: Icon(
+                    Icons.event,
+                    size: 100,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
               ),
-            ],
-          ),
+
+            // Event Details
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Event Name
+                  Text(
+                    eventName,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkGreen,
+                    ),
+                  ),
+
+                  // Small spacing after the event name
+                  SizedBox(height: 4),
+
+                  // Event Description
+                  Text(
+                    eventDescription,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppColors.darkGreen,
+                    ),
+                  ),
+
+                  // Variable spacing before the location
+                  SizedBox(height: 12),
+
+                  // Location (if available)
+                  if (location != null)
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          color: AppColors.mediumGreen,
+                          size: 20,
+                        ),
+                        SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            location,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.mediumGreen,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                  // Adjusted spacing
+                  if (location != null) SizedBox(height: 8),
+
+                  // Group Name (if available)
+                  if (groupId != null)
+                    FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseFirestore.instance
+                          .collection('groups')
+                          .doc(groupId)
+                          .get(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.done &&
+                            snapshot.data?.exists == true) {
+                          return Row(
+                            children: [
+                              Icon(
+                                Icons.group,
+                                color: AppColors.lightGrey,
+                                size: 20,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                snapshot.data!['name'],
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.lightGrey,
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+                        return SizedBox.shrink(); // Don't show anything while loading
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
