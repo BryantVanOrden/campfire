@@ -1,6 +1,11 @@
+import 'package:campfire/shared_widets/custom_text_form_field.dart';
+import 'package:campfire/shared_widets/primary_button.dart';
+import 'package:campfire/shared_widets/secondary_button.dart';
+import 'package:campfire/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:io';
 
 class EditEventPage extends StatefulWidget {
   final DocumentSnapshot event;
@@ -21,6 +26,7 @@ class _EditEventPageState extends State<EditEventPage> {
   final TextEditingController _locationController = TextEditingController();
   DateTime? eventDateTime;
   bool isPublicEvent = false;
+  File? eventImage; // Placeholder for an image if needed
 
   @override
   void initState() {
@@ -124,27 +130,83 @@ class _EditEventPageState extends State<EditEventPage> {
       appBar: AppBar(
         title: const Text('Edit Event'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Event Name
-            TextFormField(
+            CustomTextFormField(
               controller: _eventNameController,
+
+              labelText: 'Event Name', // Add labelText for the input
+              hintText: 'Camping with the boys',
+
               decoration: const InputDecoration(labelText: 'Event Name'),
+
             ),
-            // Event Description
-            TextFormField(
+
+            // Event Description (with multiple lines)
+            CustomTextFormField(
               controller: _eventDescriptionController,
+
+              labelText: 'Event Description',
+              hintText: 'It’s gonna be lit!',
+              keyboardType: TextInputType.multiline,
+
               decoration: const InputDecoration(labelText: 'Event Description'),
+
               maxLines: 3,
             ),
-            // Location
-            TextFormField(
+
+            // Event Image Placeholder (optional)
+            SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: AppColors.lightGrey, // Light gray border color
+                  width: 1.5, // Border width
+                ),
+                borderRadius: BorderRadius.circular(16), // Border radius
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16), // Ensure content respects the border
+                child: eventImage != null
+                    ? Image.file(
+                        eventImage!,
+                        width: double.infinity,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      )
+                    : Container(
+                        width: double.infinity,
+                        height: 200,
+                        color: Colors.grey[300],
+                        child: Icon(Icons.image, size: 100),
+                      ),
+              ),
+            ),
+
+            SizedBox(height: 8),
+            SecondaryButton(
+              onPressed: _selectDateTime,
+              text: eventDateTime == null
+                  ? 'Pick Date & Time'
+                  : 'Date: ${eventDateTime?.toLocal()}',
+              icon: Icons.calendar_today,
+            ),
+
+            // Location Input
+            CustomTextFormField(
               controller: _locationController,
+
+              labelText: 'Location',
+              hintText: 'The TETONS!!!!',
+
               decoration: const InputDecoration(labelText: 'Location'),
             ),
-            // Public or Group Event Toggle
+
+            // Public Event Toggle
             SwitchListTile(
               title: const Text('Is this a public event?'),
               value: isPublicEvent,
@@ -153,7 +215,19 @@ class _EditEventPageState extends State<EditEventPage> {
                   isPublicEvent = value;
                 });
               },
+              tileColor: Colors.grey.shade200,
+              inactiveTrackColor: Colors.grey.shade400,
+              inactiveThumbColor: Colors.grey.shade600,
+              activeColor: AppColors.mediumGreen,
+              activeTrackColor: AppColors.lightGreen,
             ),
+
+
+            // Update Event Button
+            SizedBox(height: 16),
+            PrimaryButton(
+              onPressed: _updateEvent,
+              text: 'Update Event',
             // Date and Time Picker
             ElevatedButton.icon(
               onPressed: _selectDateTime,
@@ -167,9 +241,15 @@ class _EditEventPageState extends State<EditEventPage> {
               onPressed: _updateEvent,
               child: const Text('Update Event'),
             ),
-            // Delete Button
+
+            // Delete Event Button
+            SizedBox(height: 8),
             ElevatedButton(
               onPressed: _deleteEvent,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red, // Delete button color
+              ),
+              child: Text('Delete Event'),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               child: const Text('Delete Event'),
             ),
