@@ -122,7 +122,7 @@ class _ProfilePageState extends State<ProfilePage> {
   // Function to log out the user
   void _logout(BuildContext context) async {
     await _auth.signOut();
-    Navigator.pushReplacementNamed(context, '/login');
+    // Navigator.pushReplacementNamed(context, '/login');
   }
 
   // Fetch all events from groups where the user is a moderator
