@@ -7,11 +7,11 @@ class TicTacToeGamePage extends StatefulWidget {
   final String otherUserId;
 
   const TicTacToeGamePage({
-    Key? key,
+    super.key,
     required this.chatId,
     required this.currentUserId,
     required this.otherUserId,
-  }) : super(key: key);
+  });
 
   @override
   _TicTacToeGamePageState createState() => _TicTacToeGamePageState();

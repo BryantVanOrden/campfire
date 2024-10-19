@@ -1,3 +1,5 @@
+import 'package:campfire/data_structure/comment_struct.dart';
+
 class Event {
   String eventId;
   String? imageLink;
@@ -6,7 +8,8 @@ class Event {
   bool isPublic;
   DateTime? dateTime;
   String? location;
-  int likeCount; // New field to store the number of likes
+  int likeCount;
+  List<Comment>? comments; // New field to store comments
 
   Event({
     required this.eventId,
@@ -16,7 +19,8 @@ class Event {
     required this.isPublic,
     this.dateTime,
     this.location,
-    this.likeCount = 0, // Default to 0 likes initially
+    this.likeCount = 0,
+    this.comments,
   });
 
   Map<String, dynamic> toJson() {
@@ -28,8 +32,8 @@ class Event {
       'isPublic': isPublic,
       'dateTime': dateTime?.toIso8601String(),
       'location': location,
-      'likeCount':
-          likeCount, // Include the like count in the Firestore document
+      'likeCount': likeCount,
+      // Do not include comments in Firestore document to avoid large data
     };
   }
 
@@ -43,8 +47,8 @@ class Event {
       dateTime:
           json['dateTime'] != null ? DateTime.parse(json['dateTime']) : null,
       location: json['location'],
-      likeCount:
-          json['likeCount'] ?? 0, // Default to 0 if no likeCount field exists
+      likeCount: json['likeCount'] ?? 0,
+      // Comments should be fetched separately
     );
   }
 }

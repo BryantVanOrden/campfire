@@ -1,3 +1,4 @@
+import 'package:campfire/screens/users_settings.dart';
 import 'package:campfire/shared_widets/edit_event_page.dart';
 import 'package:campfire/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
@@ -63,7 +64,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // Function to show the full-screen profile picture
   void _showFullScreenProfilePicture(BuildContext context) {
     showDialog(
       context: context,
@@ -98,7 +98,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Function to pick a new profile picture from the device
   Future<void> _pickNewProfilePicture() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
 
@@ -123,17 +122,15 @@ class _ProfilePageState extends State<ProfilePage> {
       UploadTask uploadTask = _storage.ref().child(fileName).putFile(file);
 
       TaskSnapshot taskSnapshot = await uploadTask;
-      return await taskSnapshot.ref.getDownloadURL(); // Get the image URL
+      return await taskSnapshot.ref.getDownloadURL();
     } catch (e) {
       print('Error uploading profile picture: $e');
       rethrow;
     }
   }
 
-  // Function to log out the user
   void _logout(BuildContext context) async {
     await _auth.signOut();
-    // Navigator.pushReplacementNamed(context, '/login');
   }
 
   // Fetch all events from groups where the custom user is a moderator
@@ -154,6 +151,14 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile Page'),
+        leading: IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const UsersSettings()),
+              );
+            }),
         actions: [
           IconButton(
             icon: Icon(
