@@ -3,14 +3,37 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class FeedPage extends StatelessWidget {
+class FeedPage extends StatefulWidget {
+  @override
+  _FeedPageState createState() => _FeedPageState();
+}
+
+class _FeedPageState extends State<FeedPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  List<String>? userGroupIds = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserGroupIds(); // Fetch user groupIds at initialization
+  }
+
+  Future<void> _loadUserGroupIds() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+      if (userDoc.exists && userDoc.data() != null) {
+        setState(() {
+          userGroupIds = List<String>.from(userDoc['groupIds'] ?? []);
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    User? user = _auth.currentUser;
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Feed'),
@@ -18,7 +41,6 @@ class FeedPage extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () {
-              // Navigate to the Create Event page
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => CreateEventPage()),
@@ -27,44 +49,37 @@ class FeedPage extends StatelessWidget {
           ),
         ],
       ),
-      body: StreamBuilder(
-        stream: _firestore.collection('events').snapshots(),
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
+      body: userGroupIds == null || userGroupIds!.isEmpty
+          ? Center(child: CircularProgressIndicator()) // Wait until groupIds are loaded
+          : StreamBuilder(
+              stream: _firestore.collection('events').snapshots(),
+              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(child: Text('No events to show.'));
-          }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(child: Text('No events to show.'));
+                }
 
-          List<DocumentSnapshot> events = snapshot.data!.docs;
-          List<String>? userGroupIds = []; // Default to empty if null
-          if (user?.uid != null) {
-            // Fetch user's group IDs from Firestore if needed
-            _firestore.collection('users').doc(user!.uid).get().then((doc) {
-              if (doc.exists && doc.data() != null) {
-                userGroupIds = List<String>.from(doc.data()!['groupIds'] ?? []);
-              }
-            });
-          }
+                List<DocumentSnapshot> events = snapshot.data!.docs;
 
-          return ListView.builder(
-            itemCount: events.length,
-            itemBuilder: (context, index) {
-              var event = events[index];
-              bool isPublic = event['isPublic'] ?? false;
-              String? groupId = event['groupId'];
-              bool canShowEvent = isPublic || (groupId != null && (userGroupIds?.contains(groupId) ?? false));
+                return ListView.builder(
+                  itemCount: events.length,
+                  itemBuilder: (context, index) {
+                    var event = events[index];
+                    bool isPublic = event['isPublic'] ?? false;
+                    String? groupId = event['groupId'];
 
+                    bool canShowEvent = isPublic || (groupId != null && userGroupIds!.contains(groupId));
 
-              if (!canShowEvent) return SizedBox.shrink(); // Skip if user can't see this event
+                    if (!canShowEvent) return SizedBox.shrink(); // Skip if user can't see this event
 
-              return EventTile(event: event);
-            },
-          );
-        },
-      ),
+                    return EventTile(event: event);
+                  },
+                );
+              },
+            ),
     );
   }
 }

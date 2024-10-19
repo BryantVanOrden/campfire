@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:campfire/theme/app_colors.dart';
 import 'package:campfire/theme/app_theme.dart';
-import 'package:location_picker_flutter_map/location_picker_flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 class SignUpLoginPage extends StatefulWidget {
@@ -79,13 +78,6 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
   }
 
   // Set picked location string when a location is picked
-  void _onLocationPicked(LatLong latLng) {
-    setState(() {
-      _pickedLocation = "${latLng.latitude}, ${latLng.longitude}";
-      print(
-          "Picked location: $_pickedLocation"); // Debugging output to check if location is picked correctly
-    });
-  }
 
   // Login Logic
   void _login() async {
@@ -307,18 +299,7 @@ class _SignUpLoginPageState extends State<SignUpLoginPage> {
                     if (!_isLogin) ...[
                       // Location Field
 
-                      SizedBox(
-                        height: 300, // Set a fixed height for the map picker
-                        child: FlutterLocationPicker(
-                          initZoom: 11,
-                          minZoomLevel: 5,
-                          maxZoomLevel: 16,
-                          trackMyPosition: true,
-                          onPicked: (pickedData) {
-                            _onLocationPicked(pickedData.latLong as LatLong);
-                          },
-                        ),
-                      ),
+                      
                       SizedBox(height: 16),
                       // Date of Birth Picker
                       GestureDetector(
