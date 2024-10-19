@@ -29,11 +29,15 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
         ),
         home: AuthenticationWrapper(),
+        // Define the routes here
+        routes: {
+          '/home': (context) => HomePage(),
+          '/login': (context) => SignUpLoginPage(), // The login page route
+        },
       ),
     );
   }
 }
-
 
 class AuthenticationWrapper extends StatelessWidget {
   @override
@@ -42,11 +46,13 @@ class AuthenticationWrapper extends StatelessWidget {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         } else if (snapshot.hasData) {
           return HomePage(); // If the user is logged in, show home page
         } else {
-          return (SignUpLoginPage()); // Otherwise, show login page
+          return SignUpLoginPage(); // Otherwise, show login page
         }
       },
     );
