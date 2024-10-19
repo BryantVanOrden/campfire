@@ -1,4 +1,5 @@
 import 'package:latlong2/latlong.dart'; // Import LatLng for location
+import 'package:flutter_webrtc/flutter_webrtc.dart'; // For RTCIceCandidate
 
 class User {
   String uid;
@@ -10,7 +11,7 @@ class User {
   LatLng location;
   String? callOffer; // Nullable string to store SDP offer
   String? callAnswer; // Nullable string to store SDP answer
-  List<Map<String, dynamic>>? iceCandidates; // To store ICE candidates
+  List<RTCIceCandidate>? iceCandidates; // Store RTCIceCandidates directly
 
   User({
     required this.uid,
@@ -25,6 +26,7 @@ class User {
     this.iceCandidates,
   });
 
+  // Convert the User object to JSON (e.g., for Firestore storage)
   Map<String, dynamic> toJson() {
     return {
       'uid': uid,
@@ -39,10 +41,18 @@ class User {
       },
       'callOffer': callOffer,
       'callAnswer': callAnswer,
-      'iceCandidates': iceCandidates,
+      // Convert iceCandidates to a List of Maps to store in Firestore
+      'iceCandidates': iceCandidates
+          ?.map((candidate) => {
+                'candidate': candidate.candidate,
+                'sdpMid': candidate.sdpMid,
+                'sdpMLineIndex': candidate.sdpMLineIndex,
+              })
+          .toList(),
     };
   }
 
+  // Convert JSON data to a User object
   static User fromJson(Map<String, dynamic> json) {
     return User(
       uid: json['uid'],
@@ -57,7 +67,16 @@ class User {
       ),
       callOffer: json['callOffer'],
       callAnswer: json['callAnswer'],
-      iceCandidates: json['iceCandidates']?.cast<Map<String, dynamic>>(),
+      // Convert the JSON iceCandidates list back into a list of RTCIceCandidate objects
+      iceCandidates: json['iceCandidates'] != null
+          ? (json['iceCandidates'] as List)
+              .map((c) => RTCIceCandidate(
+                    c['candidate'],
+                    c['sdpMid'],
+                    c['sdpMLineIndex'],
+                  ))
+              .toList()
+          : null,
     );
   }
 }
